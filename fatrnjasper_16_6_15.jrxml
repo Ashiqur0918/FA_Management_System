@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fatrnjasper" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="zid" class="java.lang.String">
+		<parameterDescription><![CDATA[Zid]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="trntype" class="java.lang.String">
+		<parameterDescription><![CDATA[Transaction type]]></parameterDescription>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+     zbusiness."zid" AS zbusiness_zid,
+
+     fatrn."xvoucher" AS fatrn_xvoucher,
+     fatrn."zid" AS fatrn_zid,
+     fatrn."xaction" AS fatrn_xaction
+
+FROM
+     "public"."zbusiness" zbusiness INNER JOIN "public"."fatrn" fatrn ON zbusiness."zid" = fatrn."zid"
+WHERE
+     fatrn."xaction" = $P{trntype}
+ AND zbusiness."zid" = cast($P{zid} as Integer)]]>
+	</queryString>
+	<field name="zbusiness_zid" class="java.lang.Integer"/>
+	<field name="fatrn_xvoucher" class="java.lang.String"/>
+	<field name="fatrn_zid" class="java.lang.Integer"/>
+	<field name="fatrn_xaction" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="26" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="35" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="32" splitType="Stretch">
+			<staticText>
+				<reportElement x="35" y="2" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[voucher]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="152" y="2" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Business]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="285" y="7" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$V{PAGE_COUNT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="35" splitType="Stretch">
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="20" y="0" width="100" height="20" forecolor="#FF0066"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{fatrn_xvoucher}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="120" y="0" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{zbusiness_zid}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="17" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="16" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="29" splitType="Stretch"/>
+	</summary>
+</jasperReport>
