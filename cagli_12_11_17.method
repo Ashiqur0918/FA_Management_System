@@ -1,0 +1,26 @@
+method cagli
+		
+		set xacc=cagli.xacc(" xtypegli='"+xtypegli+"' and xgitem='"+xgitem+"' and ~
+			xgcsa='"+xgcsa+"' and xwh='"+xwh+"'")
+			//print xacc
+
+    if xacc .eq. ""
+			set xacc=cagli.xacc(" xtypegli='"+xtypegli+"' and xgitem='"+xgitem+"' and ~
+				xgcsa='"+xgcsa+"' and xwh=''")
+		//print "2xacc="+xacc
+			if xacc .eq. ""
+				set xacc=cagli.xacc(" xtypegli='"+xtypegli+"' and xgitem='"+xgitem+"' and ~
+					xgcsa='' and xwh=''")
+		//print "3xacc="+xacc
+				if xacc .eq. ""
+					set xacc=cagli.xacc(" xtypegli='"+xtypegli+"' and xgitem='' and ~
+						xgcsa='' and xwh=''")
+		//print "4xacc="+xacc
+				end if
+			end if
+		end if
+		if xacc .eq. ""
+			print "Interface for <b>"+xtypegli+ "</b> Not Defined for Item Group "+xgitem+"/Customer or Supplier Group "+xgcsa+"/Warehouse "+xwh
+			set err=1
+		end if
+end method
