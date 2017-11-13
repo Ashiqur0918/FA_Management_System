@@ -1,0 +1,25 @@
+product ERP on the Net
+
+table fatran
+
+	caption "Fixed Asset Transfer"
+  
+
+	columns ztime,zutime, zid, xrow,xdatesent,xcode,xastname,xastcatg,xastbook,xasttype,~
+          xastunit,xastbr,xastloc,xdiv,xsec,xproj,xdepmeth,~
+          xpurdate,xdate,xyear,xper,xcur,xexch,xprime,xbase,xsup,xinvno,~
+          xnomlife,xestlife,xslvval,xretdate,xvoucher,~
+          xprvunit,xprvbr,xprvloc,xprvdiv,xprvsec,xprvproj,xdepfactor,~
+          xleasestat,xmortgstat,xassetstat,xpornum,xdateto,xcus,xmodel,xcondition,~
+          xmaxload,xunitalt,xmfgyear,xorigin,xmanufacturer,xarea,xthana,xmouza,~
+		  xareagovt,xareaphys,xaruntgovt,xaruntphys,xdistrict,xdept,xsubdept,xglref,xlong,~
+		  xdateord,xname,xalias,xlineamt,xlink,xempnum,xtag
+
+	primary key zid,xcode,xrow
+  
+	foreign key
+        zid references zbusiness.zid
+		zid,xcode references famst.zid,xcode
+	end foreign key
+  
+end table
