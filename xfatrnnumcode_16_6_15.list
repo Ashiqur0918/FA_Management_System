@@ -1,0 +1,14 @@
+     list xfatrnnumcode
+		caption globals(xaction)+" Trn List for: "+globals(xcode)
+		empty " "
+        table fatrn
+        order xvoucher
+        select "(xcode = '"+globals(xcode)+"' and xaction = '"+globals(xaction)+"')"
+        //navigators alpha
+        rows 20
+        
+        objects xvoucher attrib(link #servlet+"?page="+page+"&command=Show&xvoucher=?"), ~
+                xcode,xastcatg,xasttype,xastname,xdate
+      end list
+
+
