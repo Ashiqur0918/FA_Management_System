@@ -1,0 +1,11 @@
+//Fixed Asset menu
+//-------------------------------------------------------------------
+caption "Fixed Asset" //page 3
+option                           |action
+//-------------------------------------------------------------------
+Transaction Entry           	|#classPath+"/"+#servlet+"?menu=fatrn"
+Depreciation Process            |#classPath+"/"+#servlet+"?page=fadpprocs_mth"
+Settings                        |#classPath+"/"+#servlet+"?menu=fasetup"
+Reports                      	|#classPath+"/"+#servlet+"?menu=fareports" 
+//Cumulative FA to GL           |#classPath+"/"+#servlet+"?page=faglpost_cum"
+//-------------------------------------------------------------------
