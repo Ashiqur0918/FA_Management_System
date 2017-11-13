@@ -1,0 +1,51 @@
+method faundo
+	//check for deprciation
+	str sql="select count(*) from fatrn t where zid="+#id+" and xaction ilike 'Dep%' and xcode in (select xcode from fatrn f where f.zid=t.zid and f.xdocnum='"+xtornum+"')"
+	//print sql
+	int n=#sql(int, sql)
+	if n > 0
+		set err_fa=n
+		error "Asset had already been processed for depreciation -- Cannot Undo"
+	end if
+
+	
+	
+	
+	//
+	int n=#sql(int, "delete from fatemptrn where xdocnum='"+xtornum+"'")
+	print "Deleted "+n+" Temporary Transactions"
+	str sql="select xvoucher,xcode from fatrn where xdocnum='"+xtornum+"'"
+	//print "sql="+sql
+	int n=#sqlfill(sql)
+	int i=0
+	//print "n="+n
+	while i<n
+		array get(i,"xvoucher,xcode")
+		set i=i+1
+		str trnnum=xvoucher
+		int n_mst=#sql(int, "delete from famst where xvoucher='"+xvoucher+"'")
+		print "Deleted "+n_mst+" FA Masters"
+		set xvoucher=""
+		print "trnnum="+trnnum
+		
+		int n_gl=#sqlfill("select xvoucher from glheader where xdoctype ilike 'Fixed Asset%' and xdocnum='"+trnnum+"'")
+		int i_gl=0
+		while i_gl < n_gl
+			array get(i_gl,"xvoucher")	
+			set i_gl=i_gl+1
+			int n_det=#sql(int, "delete from gldetail where xvoucher='"+xvoucher+"'")
+			print "Deleted "+n_det+" GL Details"
+			
+			
+		end while
+		int n_gl=#sql(int, "delete from glheader where xvoucher='"+xvoucher+"'")
+		print "Deleted "+n_gl+" GL Headers"
+		int n_gl=#sql(int, "delete from glaudit where xdoctype ilike 'Fixed Asset%' and xvoucher='"+xvoucher+"'")
+		print "Deleted "+n_gl+" GL Audit Trails"
+	
+	end while
+
+	int x=#sql(int, "delete from fatrn where xdocnum='"+xtornum+"'")
+	print "Deleted "+x+" FA Transactions"
+
+end method
