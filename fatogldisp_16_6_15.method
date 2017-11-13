@@ -1,0 +1,137 @@
+ method fatogldisp
+		//print "called"
+		 int temp=#sql(int,"delete from glaudit where xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher+"'")
+		 buffer glaudit
+		 set glaudit.xdoctype="Fixed Asset Transaction"
+		 set glaudit.xdocnum=xvoucher
+		 set glaudit.xdocrow=0
+		 set glaudit.xcur=#cur
+		 set glaudit.xexch=xexch
+		 //print "inside mthod"+temp
+        set xwh=""
+        set xgcsa=""
+        set glaudit.xdiv=xdiv
+        set glaudit.xsec=xsec
+        set glaudit.xproj=xproj
+
+        //Cash Debit		
+      	set xtypegli="Cash/General Reserves"	
+		//set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	comp glaudit.xlineamt=0.0 + xprime
+      	set glaudit.xtypegli=xtypegli
+      	insert glaudit
+		//print #result+" cash debit "
+		
+		set xtypegli="Disposal Account"	
+		//set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	set glaudit.xlineamt=0.0-xprime
+      	set glaudit.xtypegli=xtypegli+" Cash/General Reserves Contra"
+      	insert glaudit
+		//print #result+" cash contra"
+		
+		//Asset Cost Credit
+		set acqval = 0.0+#sql("select xprime from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+		set myexch = 0.0+#sql("select xexch from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+		set glaudit.xexch=myexch
+      	set xtypegli="Asset Acquisition"	
+		set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	comp glaudit.xlineamt=0.0 - acqval
+      	set glaudit.xtypegli=xtypegli
+      	insert glaudit
+		//print #result+" cost credit"
+		
+		set xtypegli="Disposal Account"	
+		//set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	set glaudit.xlineamt=0.0+acqval
+      	set glaudit.xtypegli=xtypegli+" Asset Cost Contra"
+      	insert glaudit
+		//print #result+" cost contra"+acqval+" exch "+myexch
+		
+		//Accumulated Depreciation Debit
+		set acdepval = 0.0+#sql("select sum(xprime) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction='Depreciation'")
+		set myexch = 0.0+#sql("select xexch from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+		set glaudit.xexch=myexch
+      	set xtypegli="Accumulated Depreciation"	
+		set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	comp glaudit.xlineamt=0.0 + acdepval
+      	set glaudit.xtypegli=xtypegli
+      	insert glaudit
+		//print #result+" AC dep debit"
+		set xtypegli="Disposal Account"	
+		//set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	set glaudit.xlineamt=0.0 - acdepval
+      	set glaudit.xtypegli=xtypegli+" Accumulated Depreciation Contra"
+      	insert glaudit
+		//print #result+" AC dep contra"
+		
+		//Gain on Disposal credit
+		set netbookval = 0.0+acqval-acdepval
+		set gainloss = 0.0+xprime - netbookval
+		
+		set myexch = 0.0+#sql("select xexch from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+		set glaudit.xexch=myexch
+      	set xtypegli="Gain on Disposal"	
+		set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	comp glaudit.xlineamt=0.0 - gainloss
+      	set glaudit.xtypegli=xtypegli
+      	insert glaudit
+		//print #result+" Gin loss credit"
+		set xtypegli="Disposal Account"	
+		//set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	set glaudit.xlineamt=0.0 + gainloss
+      	set glaudit.xtypegli=xtypegli+" Profit Contra"
+      	insert glaudit
+		//print #result+" Gin loss contra"
+     
+
+	if #result .eq. "false"
+	  set err=1
+	end if
+	str sysnot=imdef.xsysnot()
+    if sysnot .ne. "1"
+      set curdate=#date
+    elseif xdatecom .eq. #maxdate
+      set curdate=#date
+    else
+      set curdate=xdate
+    end if
+	set doctype="Fixed Asset Transaction"
+	set docnum=xvoucher
+//print "#result="+#result+" err="+err
+  //console "#result="+#result+" err="+err
+
+	if err == 1 
+		//rollback
+	
+	else
+		set trn=""
+    //print "date="+xdatecom
+		if date .eq. ""
+      set date=xdate
+    end if
+    call glvoucher	
+		if err == 1 .or. #result .eq. "false"
+			//rollback
+		//print "Rolling Back ..."
+		else
+	    //set temp=#sql(string,"update imtor set xdatecom='"+curdate+"' where xtornum='"+xtornum+"'")
+			//commit
+		//print "Commiting ..."
+		end if
+	end if
