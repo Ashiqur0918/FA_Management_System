@@ -1,0 +1,17 @@
+format xcodes
+  file xcodes.csv
+  table xcodes
+  fdelimiter ,
+  rdelimiter \r\n
+  skip 1
+
+  columns zid,xtype,xcode,xdescdet,xprops,xcodealt,xteam,zactive
+
+   event before
+    set xcodes.zid=#id
+	//print xcodes.xcode+"-"+xdescdet
+  end event
+
+end format
+
+
