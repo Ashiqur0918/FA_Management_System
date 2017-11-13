@@ -1,0 +1,149 @@
+page faglpost_cum
+  caption "Periodical GL Posting for Depreciation"
+  sections form one, script myscript
+  form one
+    caption "<center><b>"FA to GL Transfer Cumulative"</b>"
+    
+    layout 1
+    objects Post To GL, Clear, "<p>",~
+            xtrnfa,xyear,xper,xastcatg
+
+    field xastcatg
+      attrib local
+      display ocombo
+      //caption From FA Trn Num
+      pick "select xcode from xcodes where xtype='FA Category'"
+      
+    end field
+	field xtrnfa
+		caption Depreciation Trn Code
+		pick select xtrn from xtrn where xtypetrn='Fixed Asset Transaction' and xaction ilike 'Depr%'
+	end field
+    
+    field xfatrnf
+      attrib local
+      display text
+      caption From FA Trn Num
+      pick xfatrnnum
+    end field
+
+    field xfatrnt
+      attrib local
+      display text
+      caption To FA Trn Num
+      pick xfatrnnum
+    end field
+
+    field Post
+      event before
+      
+      set tmvoucher=""
+       set globals(ErrChk) = ""
+        call glhd_add
+		//print "Method called"
+      end event
+    end field
+
+  end form
+
+  method glhd_add
+         set globals(ErrChk) = ""
+         buffer fatrn
+         set xfatrnf = "0"
+		 set xfatrnt = "Zz"
+         set tranmsg=""
+         set totranmsg=""
+         set totprime=0.0
+         set incat=#sql("select xastcatg from fatrn where xvoucher>='"+xfatrnf+"'")
+         set strtdate=#sql("select xdate from fatrn where xvoucher>='"+xfatrnf+"'")
+         set invoucher=#sql("select xvoucher from fatrn where xvoucher>='"+xfatrnf+"'")
+         
+         set xfatrn=#sub(invoucher,0,4)
+         //print incat
+         set MySql = "select xvoucher from fatrn where xvoucher>='"+xfatrnf+"' and xvoucher<='"+xfatrnt+"' and xastcatg = '"+xastcatg+"' and xyear="+xyear+" and xper="+xper+" and xtrnfa = '"+xtrnfa+"' order by xvoucher"
+         set tmfatrn=#sql(MySql)
+         print tmfatrn+MySql
+         while #result .eq. "true"
+               //print tmfatrn+" After While"
+               set curcat=#sql("select xastcatg from fatrn where xvoucher='"+tmfatrn+"'")
+               set curdate=#sql("select xdate from fatrn where xvoucher='"+tmfatrn+"'")
+               
+               if curdate .ne. strtdate
+                   set globals(ErrChk)="1"
+    			   error "Transaction Date Must be Same For All Transaction;<br> Process Aborted<br>"
+               end if
+                              
+               if globals(ErrChk) .ne. "1"
+                  //print curcat+" Catagory"
+                   //if curcat .ne. incat
+                       //set globals(ErrChk)="1"
+        			   //error "Asset Catagory must be same for All Transaction;<br> Process Aborted<br>"
+                   //else
+                       set xvoucher=tmfatrn
+                       move fatrn = fatrn(xvoucher)
+                       //print xvoucher+" "+#result+" "+fatrn.xprime+" "+fatrn.xglref+" ref"
+					   set xglvoucher=glheader.xvoucher("xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher+"'")
+                       if fatrn.xglref .ne. "" .or. xglvoucher .ne. ""
+                          set tranmsg=" "+tranmsg+xvoucher+", "
+                       else
+                           //print "last else"
+                          set totranmsg=" "+totranmsg+xvoucher+", "
+                          set totprime=0.0+totprime+fatrn.xprime
+
+                       end if
+                   //end if
+                end if
+         
+               set tmfatrn=#sql(str,"select xvoucher from fatrn where xvoucher>'"+tmfatrn+"' and xvoucher<='"+xfatrnt+"' and xastcatg = '"+xastcatg+"' and xyear="+xyear+" and xper="+xper+" and xtrnfa = '"+xtrnfa+"' order by xvoucher")
+         end while
+         print totranmsg+" "+totprime
+         if globals(ErrChk) .ne. "1" .and. totranmsg .ne. ""
+					set xvoucher = vouchernum
+					set xtrnfa = tmp
+					set xdiv = fatrn.xdiv
+					set xsec = fatrn.xsec
+					set xproj = fatrn.xproj
+					set ig = xastcatg
+					set xprime = 0.0+totprime
+					call fatogl
+             
+                      
+         end if
+         //************* end of removed code
+    //action show
+     if globals(ErrChk) .ne. "1" .and. tranmsg .ne. ""
+        print "<font color=red size=3>"+" Transaction No.: "+tranmsg+"is Already Transfered to GL"
+     end if
+     if tmvoucher .ne. ""
+        print "<font color=blue size=3>"+"Voucher No.: "+tmvoucher+" Created for FA Transaction :"+totranmsg
+     end if
+     
+         set MySql = "select xvoucher from fatrn where xvoucher>='"+xfatrnf+"' and xvoucher<='"+xfatrnt+"'"
+         set tmfatrn=#sql(str,MySql)
+         while #result .eq. "true"
+               if tmvoucher .ne. ""
+                  
+				  int placeh = #parse("key",totranmsg,tmfatrn)
+                  if placeh > 0
+                     set updtrn=#sql("update fatrn set xglref='"+tmvoucher+"' where xvoucher='"+tmfatrn+"'")
+                  end if
+               end if
+         set tmfatrn=#sql(str,"select xvoucher from fatrn where xvoucher>'"+tmfatrn+"' and xvoucher<='"+xfatrnt+"'")
+         end while
+         
+    
+   
+  end method
+
+  script myscript
+    <script language="javascript" type="text/javascript">
+    var detail
+    function clicked(b){
+      b.value = "Top"
+      detail="clicked"
+    }
+    </script>
+  end script
+  
+  
+end page
