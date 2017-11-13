@@ -1,0 +1,306 @@
+page fatransfer
+
+    caption "Asset Transfer By Individual Asset"
+    sections form imtrn,list imtrn,script myscript,~
+    	method chk_access, method upd_fatrn,~
+    	method upd_famst
+		
+	list imtrn
+		table fatran
+        caption "List of Transfer Transaction"
+        order xcode 
+		select "(xcode='"+xcode+"')"
+        rows 20
+        objects  xrow attrib(link #servlet+"?page="+page+"&command=Show&xrow=?"),~
+                 xcode,xasttype,xastname,xastcatg,xdatesent,xdept,xastloc,xempnum
+		
+			field xdatesent
+				caption Transfer Date
+			end field
+
+	end list
+
+    form imtrn
+		layout 1
+		objects Show,Clear,~
+				Transfer,~
+				xcode,xdatesent,~
+				xstr01 display(const) caption(Current Department),xdept,~
+				xstr02 display(const) caption(Current Location),xastloc,~
+				xstr03 display(const) caption(Current Responsible Person),xempnum
+
+		field xcode
+			caption Asset Code
+			pick list famst	
+			attrib submit
+		end field
+	
+		field xdept
+			caption New Department
+			display ocombo
+            pick "select xcode from xcodes where zid='"+#id+"' and xtype='Division'"
+		end field
+		
+		field xstr01
+			event after
+				set xstr01=#sql("select xdept from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+			end event
+		end field
+      
+		field xdatesent
+			caption Transfer Date
+			default #d
+		end field
+		
+		field xempnum
+			pick "select xcode from xcodes where zid='"+#id+"' and xtype='Employee'"
+			display ocombo
+			caption New Responsible Person
+		end field
+		
+		field xstr03
+			event after
+				set xstr03=#sql("select xempnum from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+			end event
+		end field
+		
+		field xastloc
+			pick code FA Location 
+            display ocombo
+			caption New Location
+		end field
+		
+		field xstr02
+			event after
+				set xstr02=#sql("select xastloc from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+			end event
+		end field
+      
+	  
+		field Transfer
+			event before
+				set globals(ErrChk) = ""      	
+				
+				set mysql=#sql("select xcode from fatran where zid='"+#id+"' and xcode='"+xcode+"'")
+				print mysql
+				if mysql .eq. ""
+					buffer fatran
+					//print #result
+					move fatran = famst(xcode)
+					insert fatran
+				end if
+				
+				if globals(ErrChk) .ne. "1"
+					buffer famst=famst(xcode)
+					//move famst=famst(xcode)					
+					//print famst.xdept
+					set famst.xdept=xdept
+					set famst.xastloc=xastloc
+					set famst.xempnum=xempnum
+					update famst(xcode)
+					
+					buffer fatran
+					//print #result
+					move fatran = famst(xcode)
+					
+					//print fatran.xcode
+					str mysql = "select xrow from fatran where xcode='"+xcode+"' order by xcode,xrow desc"
+					//print mysql
+					set myrow = 0+#sql(mysql)
+					set fatran.xrow = 0+myrow+1
+					set fatran.xdatesent = xdatesent
+					insert fatran
+					//print #result
+					
+				end if
+				
+			end event
+		end field
+      
+		field Transfer11111
+			event before
+				set globals(ErrChk) = ""
+        	
+				call chk_access
+        	
+				if globals(ErrChk) .ne. "1"
+					//**NOWAY*** class osbcustom(getLocalProp("Module", "fa", "Acquisition", stype))
+					set trncode = #sql(str,"select xtrn from xtrn where xtypetrn='Fixed Asset Transaction' and xtrn='"+stype+"'")
+					if #result .eq. "false"
+						set globals(ErrChk) = "1"
+						//error "Acquisition code not found in Module Setup"
+					else
+						str mysql = #sql(str,"select xvoucher from fatrn where xvoucher like '"+trncode+"%' order by xvoucher desc")
+						if #result .eq. "true" .and. mysql .ne. ""
+							set last_num = 0+#sub(mysql,6)
+						end if
+						set last_num = 0+1+last_num
+						set mysql = #padl(""+last_num,6,"0")
+						set vouchernum = trncode + mysql
+					end if
+				end if
+			        	
+            if globals(ErrChk) .ne. "1"
+             	set chk_div = #sql("select xcode from xcodes where xtype='Division' and xcode='"+xdiv+"'")
+             	if #result .ne. "true"
+             		set globals(ErrChk)="1"
+             		error "Unit Code not Found</p>Cannot "+#command
+             	end if
+            end if
+
+//            if globals(ErrChk) .ne. "1"
+  //           	set chk_loc = #sql("select xcode from xcodes where xtype='FA Location' and xcode='"+xastloc+"'")
+    //         	if #result .ne. "true"
+      //       		set globals(ErrChk)="1"
+        //     		error "Location Code not Found</p>Cannot "+#command
+          //   	end if
+            //end if
+             
+            if globals(ErrChk) .ne. "1"
+             	set chk_dept = #sql("select xcode from xcodes where xtype='Department' and xcode='"+xdept+"'")
+             	if #result .ne. "true"
+             		set globals(ErrChk)="1"
+             		error "Department Code not Found</p>Cannot "+#command
+             	end if
+            end if
+
+//            if globals(ErrChk) .ne. "1"
+  //           	set chk_subdept = #sql("select xcode from xcodes where xtype='Sub Department' and xcode='"+xsubdept+"'")
+    //         	if #result .ne. "true"
+      //       		set globals(ErrChk)="1"
+        //     		error "Sub Department Code not Found</p>Cannot "+#command
+          //   	end if
+            //end if
+            
+            if globals(ErrChk) .ne. "1"
+            	set astcode = #sql(str,"select xcode from famst where xcode='"+xcode+"'")
+            	if #result .ne. "true"
+            		set globals(ErrChk) = "1"
+            		error "Wrong Asset Code"
+            	else
+            		buffer famst
+            		move famst = famst(xcode)
+            		if famst.xassetstat .ne. "In Use"
+            			set globals(ErrChk) = "1"
+            			error "Cannot Transfer</p>Asset Status : "+famst.xassetstat
+            		end if
+            	end if
+            end if
+            
+//            if globals(ErrChk) .ne. "1"
+//				class osbcustom(get_code_prop("FA Category",famst.xastcatg,"Short Code",vtype))
+//	            if vtype .eq. ""
+//	                set globals(ErrChk) = "1"
+//	                error "Short Code for ("+xastcatg+ ") not found</p>Cannot "+#command
+//	            end if
+  //        	end if
+            
+            if globals(ErrChk) .ne. "1"
+            	set acqval = #sql(decimal,"select sum(xbase) from fatrn where xvoucher like 'AC%' and xcode='"+astcode+"'")
+            	set addval = #sql(decimal,"select sum(xbase) from fatrn where xvoucher like 'AD%' and xcode='"+astcode+"'")
+            	set depval = #sql(decimal,"select sum(xbase) from fatrn where xvoucher like 'DE%' and xcode='"+astcode+"'")
+            	set astval = 0.0+acqval+addval-depval
+            	//print acqval+" "+addval+" "+depval+" "+astval
+            end if
+        	
+			if globals(ErrChk) .ne. "1"
+				set oldvoucher = #sql("select xvoucher from fatrn where xvoucher like 'AC%' and xcode='"+xcode+"'")
+			    //**NOWAY*** class osbcustom(getglyear(#date,xyear))
+			    //**NOWAY*** class osbcustom(getglper(#date,xper))
+                set assettype = #sub(famst.xasttype,0,3)
+//				set assetcode = xdiv+"-"+xastloc+"-"+xdept+"-"+xsubdept+"-"+vtype+"-"+famst.xasttype+"-"+xyear+"-"
+                set assetcode = xdiv+"/"+xdept+"/"+assettype+"/"+xyear+"/"
+				str mysql = #sql(str,"select xcode from fatrn where xcode like '"+assetcode+"%' order by xcode desc")
+				if #result .eq. "true" .and. mysql .ne. ""
+					set last_num = 0+#sub(mysql,18)
+				end if
+				set last_num = 1+last_num
+				set mysql = #padl(""+last_num,3,"0")
+				set newcode = assetcode + mysql					                			
+				//print newcode+"</p>"+xcode+" "+oldvoucher
+				call upd_fatrn
+				call upd_famst
+				
+				str mysql = "update famst set xassetstat = 'Transfered' where xcode='"+xcode+"'"
+				set tmpstr = #sql(str,mysql)
+				
+				str mysql = "update fatrn set xassetstat = 'Transfered' where xvoucher='"+oldvoucher+"'"
+				set tmpstr = #sql(str,mysql)				
+			end if
+			            
+			if globals(ErrChk) .ne. "1"
+            	print "<font color=blue size=4>Transfered Succesfully</p>New Code : "+newcode
+            end if
+			end event
+		end field
+
+		embed onsubmit="submitit(this)"
+    end form
+
+    script myscript
+
+        <script language=javascript type="text/javascript">
+        var detail
+
+        function clicked(b){
+          detail="clicked"
+        }
+        function submitit(form){
+          if (detail=="clicked"){
+            form.page.value = "imtrn"
+          }
+        }
+        </script>
+    end script
+     
+    method upd_fatrn
+		set myqry = "insert into fatrn (zid, xvoucher,xdate,xyear,xper,xcode,xastname,~
+			xastcatg,xastbook,xasttype,xastunit,xastbr,xastloc,xdiv,xsec,xproj,xdepmeth,~
+			xcur,xexch,xprime,xbase,xsup,xinvno,xnomlife,xestlife,xslvval,xretdate,xdepfactor,~
+			xprvunit,xprvbr,xprvloc,xprvdiv,xprvsec,xprvproj,xglref,xlong,~
+			xleasestat,xmortgstat,xassetstat,xpornum,xdateto,xcus,xmodel,xcondition,~
+			xmaxload,xunitalt,xmfgyear,xorigin,xmanufacturer,xarea,xthana,xmouza,~
+			xareagovt,xareaphys,xaruntgovt,xaruntphys,xdistrict,xdept,xsubdept,xdateord,~
+			xname,xalias)"   //xcode,xdiv,xdept,xsubdept,xastloc
+		set myqry = myqry + " values('"+#id+"','"+vouchernum+"','"+#date+"','"+xyear+"','"+xper+"','"+newcode+"',~
+			'"+famst.xastname+"','"+famst.xastcatg+"','"+famst.xastbook+"','"+famst.xasttype+"','"+famst.xastunit+"',~
+			'"+famst.xastbr+"','"+xastloc+"','"+xdiv+"','','','"+famst.xdepmeth+"',~
+			'"+famst.xcur+"','"+famst.xexch+"','"+astval+"','"+astval+"','"+famst.xsup+"','"+oldvoucher+"',~
+			'"+famst.xnomlife+"','"+famst.xestlife+"','"+famst.xslvval+"','"+famst.xretdate+"',~
+			'"+famst.xdepfactor+"','','','','','','','','"+famst.xlong+"','"+famst.xleasestat+"',~
+			'"+famst.xmortgstat+"','"+famst.xassetstat+"','"+famst.xpornum+"','"+#date+"',~
+			'','"+famst.xmodel+"','"+famst.xcondition+"','"+famst.xmaxload+"','"+famst.xunitalt+"',~
+			'"+famst.xmfgyear+"','"+famst.xorigin+"','"+famst.xmanufacturer+"','"+famst.xarea+"',~
+			'"+famst.xthana+"','"+famst.xmouza+"','"+famst.xareagovt+"','"+famst.xareaphys+"',~
+			'"+famst.xaruntgovt+"','"+famst.xaruntphys+"','"+famst.xdistrict+"','"+xdept+"',~
+			'"+xsubdept+"','"+xdateord+"','"+famst.xname+"','"+famst.xalias+"')"
+		set tmpstr =#sql(myqry)
+    end method
+
+    method upd_famst
+		set myqry = "insert into famst (zid, xcode,xastname,xastcatg,xastbook,xasttype,~
+			xastunit,xastbr,xastloc,xdiv,xsec,xproj,xdepmeth,~
+			xvoucher,xdate,xyear,xper,xcur,xexch,xprime,xbase,xsup,xinvno,~
+			xnomlife,xestlife,xslvval,xretdate,xdepfactor,~
+			xprvunit,xprvbr,xprvloc,xprvdiv,xprvsec,xprvproj,~
+			xleasestat,xmortgstat,xassetstat,xpornum,xdateto,xcus,xmodel,xcondition,~
+			xmaxload,xunitalt,xmfgyear,xorigin,xmanufacturer,xarea,xthana,xmouza,~
+			xareagovt,xareaphys,xaruntgovt,xaruntphys,xdistrict,xdept,xsubdept,xglref,xlong,~
+			xdateord,xname,xalias)"
+		set myqry = myqry + " values('"+#id+"','"+newcode+"','"+famst.xastname+"','"+famst.xastcatg+"',~
+			'"+famst.xastbook+"','"+famst.xasttype+"','"+famst.xastunit+"',~
+			'"+famst.xastbr+"','"+xastloc+"','"+xdiv+"','','','"+famst.xdepmeth+"',~
+			'"+vouchernum+"','"+#date+"','"+xyear+"','"+xper+"',~
+			'"+famst.xcur+"','"+famst.xexch+"','"+astval+"','"+astval+"','"+famst.xsup+"','"+oldvoucher+"',~
+			'"+famst.xnomlife+"','"+famst.xestlife+"','"+famst.xslvval+"','"+famst.xretdate+"',~
+			'"+famst.xdepfactor+"','','','','','','','"+famst.xleasestat+"',~
+			'"+famst.xmortgstat+"','"+famst.xassetstat+"','"+famst.xpornum+"','"+globals(xdate)+"',~
+			'','"+famst.xmodel+"','"+famst.xcondition+"','"+famst.xmaxload+"','"+famst.xunitalt+"',~
+			'"+famst.xmfgyear+"','"+famst.xorigin+"','"+famst.xmanufacturer+"','"+famst.xarea+"',~
+			'"+famst.xthana+"','"+famst.xmouza+"','"+famst.xareagovt+"','"+famst.xareaphys+"',~
+			'"+famst.xaruntgovt+"','"+famst.xaruntphys+"','"+famst.xdistrict+"','"+xdept+"',~
+			'"+xsubdept+"','','"+famst.xlong+"','"+xdateord+"','"+famst.xname+"','"+famst.xalias+"')"
+		set tmpstr =#sql(myqry)				
+    end method
+     
+end page
