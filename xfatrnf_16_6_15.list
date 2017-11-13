@@ -1,0 +1,11 @@
+list xfatrnf
+      caption FA To GL Transfer
+      table fatrn
+      order xvoucher
+      select "(xglref='') and  (xvoucher like '%"+zvalue+"%')""
+      navigators alpha
+      rows 20
+      objects xvoucher attrib(link "abc" embed onclick="return updateParent(this:'xfatrnf')"), ~
+      xdate, xcode
+end list
+
