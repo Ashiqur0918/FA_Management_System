@@ -1,0 +1,19 @@
+product ERP on the Net
+
+table fatemptrn
+
+  caption "FA Transaction Temp"
+
+  columns ztime,zutime, zid,xdate,xyear,xper,xastname,xastcatg,xasttype,~
+          xastunit,xastbr,xastloc,xdiv,xsec,xproj,xdepmeth,~
+          xcur,xexch,xdocnum,xdocrow,~
+          xnomlife,xestlife,xslvval,xretdate,xdepfactor,xdept,xsubdept,xgitem
+		 
+          
+  primary key zid,xdocnum,xdocrow
+  
+  foreign key
+        zid references zbusiness.zid
+  end foreign key
+
+end table
