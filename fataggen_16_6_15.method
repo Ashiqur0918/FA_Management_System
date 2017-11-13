@@ -1,0 +1,39 @@
+method fataggen
+	
+str a=xcodes.xprops("xtype='FA Category' and xcode='"+astcatg+"'")
+str b=xcodes.xprops("xtype='FA Type' and xcode='"+asttype+"'")
+//dprint "a="+a
+//dprint "b="+b
+//dprint astcatg
+//dprint asttype
+if a .ct. "notag" .or. b .ct. "notag" 
+    set tag=""
+    Print "No tag was generated for Category "+astcatg+" and Type: "+asttype+"."
+else
+  //print "acc="+acc
+	int len=#length(acc)
+	//print "len="+len
+	if len < 4
+		set acc=#padl(acc,4,"0")
+	end if
+	set acc=#sub(acc,len-4,4)
+	//print "acc="+acc
+	
+	str setnum=#sql(varchar,"select max(xtag) from famst where xtag like '"+acc+"%'")
+  if setnum .eq. ""
+    set itemp=0
+  else
+    int itemp=#sub(setnum,5)
+  end if
+  //print itemp
+  int itemp=itemp+1
+	str setnum=#padl(itemp,4,"0")
+	//print "setnum="+setnum
+	
+	//str sernum=#sql(int,"select count(*) from famst where xtag like '"+acc+"-"+setnum+"%'")
+	//str sernum=#padl(sernum,3,"0")
+	//print "sernum="+sernum
+	set tag=acc+"-"+setnum //+"-"+sernum
+	//dprint "tag="+tag
+ end if
+end method
