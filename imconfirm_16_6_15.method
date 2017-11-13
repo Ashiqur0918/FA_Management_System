@@ -1,0 +1,330 @@
+method imconfirm
+//print "here"
+  call imcheckbatchtor
+  if err == 1
+    error "Error in Batch"
+  end if
+
+  //print "to="+xtornum  
+  int err=0
+	set xstatustor=imtorstat.xstatustor(xtornum)
+	if #check(xstatustor,"C")
+		//error "Transfer Order <span class=br>"+xtornum+"</span> Already Confirmed -- Nothing to Do!"
+		error " Already Confirmed -- Nothing to Do! "
+  elseif #check(xstatustor,"E")
+		//error "Transfer Order <span class=br>"+xtornum+"</span> is Empty -- Nothing to Do!"
+		error " is Empty -- Nothing to Do! "
+	end if
+  str tornum=imtor.xtornum(xtornum)
+	if tornum .eq. ""
+		//error "TO "+xtornum+" Does Not Exist -- Nothing to Do!"
+		error " Does Not Exist -- Nothing to Do! "
+	end if
+  
+	str serstat=#sql(varchar,"select imserstat("+#id+",'Transfer Order','"+xtornum+"',0)")
+            if serstat .ne. ""
+              error " <span class=br>Serial Number Mismatch in Row "+serstat+" -- Cannot Confirm!</span>"
+            end if
+  
+  
+  set xdatecom=imtor.xdatecom(xtornum)
+  set xfwh=imtor.xfwh(xtornum)
+  set xfdiv=imtor.xfdiv(xtornum)
+  set xfsec=imtor.xfsec(xtornum)
+  set xfproj=imtor.xfproj(xtornum)
+
+  set xtwh=imtor.xtwh(xtornum)
+  set xtdiv=imtor.xtdiv(xtornum)
+  set xtsec=imtor.xtsec(xtornum)
+  set xtproj=imtor.xtproj(xtornum)
+
+  set date=#sub(xdaterel,0,10)
+  if date .gt. #date
+    error " Cannot Proceed-Confirm Date is Less Then Release/Pick Date "
+  else
+    if xfwh .eq. ""
+			if #check(xstatustor, "R")
+			else
+      	error " Cannot Proceed-Transaction has Not been Released "
+			end if
+		else
+			if #check(xstatustor, "PP")
+      	error " Cannot Proceed-Transaction is Only Partially Picked "
+			elseif #check(xstatustor, "P")
+			else
+      	error " Cannot Proceed-Transaction has Not been Picked "
+			end if
+		end if
+			
+  end if
+	str sysnot=imdef.xsysnot()
+  
+  
+  if sysnot .ne. "1"
+    set xdatecom=#date
+  elseif xdatecom .eq. #maxdate
+    set xdatecom=#date
+  else
+  end if
+//print "deleting glaudit"	
+  //call cost
+//***************
+    int temp=#sql(int,"delete from glaudit where xdoctype='Transfer Order' and xdocnum='"+xtornum+"'")
+//print "temp="+temp+#result
+    set #result="true"
+						
+	str imclist="xrowtor,xitem,xitemext,xbatch,xfloc,xqty,xval"						
+	
+	str sql="select "+imclist+" from imtdt where ~
+				 xtornum='"+xtornum+"' and xqty> 0 order by xtornum,xrowtor"
+				 
+	int imcount=#sqlfill(sql)
+	int imi = 0
+	int imerr=0
+	//begin
+	while imi < imcount
+	
+	
+		array get(imi,imclist)
+		//buffer caitem=caitem(xitem)
+    str batchman=caitem.xbatchman(xitem)
+    set xtypestk=caitem.xtypestk(xitem)
+    if xtypestk .eq. "Non-Stock"
+    else
+	
+		
+		  if xfwh .eq. ""
+    	  set batchqty=xqty
+    	  set batchval=xval
+    	else
+      
+      //*****OLD*******      
+      //buffer imbatview=imbatview("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xfwh+"' and xbatch='"+xbatch+"' and xloc='"+xfloc+"'")
+      //if xbatch .eq. ""
+  	  //	double tempqty=0.00+imbatview.xqty //("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xfwh+"' and xbatch=''")
+			//	if tempqty < xqty
+      //  	set xbatch=imbatview.xbatch("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xfwh+"' and xqty>="+xqty)
+			//		if xbatch .ne. ""
+      //  		set tempqty=xqty
+			//		end if
+			//		if tempqty < xqty
+      //  		set err=1
+			//			error " Batch "+xbatch+" Quantity is Less than Transfer Quantity "
+			//		end if
+      //    buffer imbatview=imbatview("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xfwh+"' and xbatch='"+xbatch+"' and xloc='"+xfloc+"'")
+			//	end if
+      //          
+			//end if
+			
+			  //*****NEW - SAME AS IN DO ******************************
+			  str batchman=caitem.xbatchman(xitem)
+
+			  
+			if checkbatch .ne. "N"
+			  buffer imbatview=imbatview("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xfwh+"' and xbatch='"+xbatch+"' and xloc='"+xfloc+"' and (xavail+xissunc)>="+xqty)
+			  if imbatview.xqty <= 0
+          if batchman .eq. "1" .or. xbatch .ne. ""
+            set imerr=1
+						error "Batch "+xbatch+" Quantity for Item "+xitem+" is Less than Transfer Quantity"
+          else
+					  buffer imbatview=imbatview("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xfwh+"' and (xavail+xissunc)>="+xqty)
+					  if imbatview.xqty <= 0
+              set imerr=1
+              error "Batch "+xbatch+" Quantity for Item "+xitem+" is Less than Transfer Quantity"
+            else
+              set xbatch=imbatview.xbatch
+              set xfloc=imbatview.xloc
+              int itemp=#sql(int,"update imtdt set xbatch='"+xbatch+"',xfloc='"+xfloc+"' where xtornum='"+xtornum+"' and xrowtor="+xrowtor)
+              if itemp > 0
+                print "<span class=bl>Batch Number "+xbatch+" and Issuing Location "+xfloc+" Automatically Assigned to Row "+xrowtrn+" for Item "+xitem+" "+xitemext+".</span>"
+              else
+                set imerr=1
+                print "<span class=bl>Could NOT Update Batch Number "+xbatch+" and Issuing Location "+xfloc+" in Row "+xrowtrn+" for Item "+xitem+" "+xitemext+".</span>"
+              end if
+            end if
+          end if
+        end if
+       end if
+			
+        //******************************
+			
+              
+              
+        string group = caitem.xgitem(" xitem = '"+xitem+"'")
+        string costtype = #prop(xcodes.xprops("xtype = 'Item Group' and xcode = '"+group+"'"),"costing");
+
+        //console "group="+group+"*costtype="+costtype
+        double batchqty=0.00
+        double batchval=0.00
+
+        if costtype .eq. "fifo"
+    		  set batchqty=0.00+imffview.xqty("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh= '"+xfwh+"'")
+    		  set batchval=0.00+imffview.xval("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh= '"+xfwh+"'")
+    		else
+      	  set batchqty=0.00+imbatview.xqty //("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh= '"+xfwh+"' and xbatch= '"+xbatch+"'")
+      	  set batchval=0.00+imbatview.xval //("xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh= '"+xfwh+"' and xbatch= '"+xbatch+"'")
+
+      	end if
+      	//print "xbatch="+xbatch+"/xqty="+xqty+"/batchqty="+batchqty+"/batchval="+batchval              
+      	if xval == 0.00
+      	  if batchqty > 0
+        	  set xval=xqty*batchval/batchqty
+        	else
+            set xval=0.00
+          end if
+        end if
+      end if
+      //print "*finishing"
+
+      //glaudit
+
+      double xstdcost=0.0+xqty*caitem.xstdcost(" xitem='"+xitem+"'")
+      int t=#sql(int,"update imtdt set xbatch='"+xbatch+"', xval="+xval+", xstdcost="+xstdcost+" where xtornum='"+xtornum+"' and xrowtor="+xrowtor)
+      //print "t="+t
+      //double var=xval-xstdcost
+      buffer glaudit
+  
+      set glaudit.xdoctype="Transfer Order"
+      set glaudit.xdocnum=xtornum
+      set glaudit.xdocrow=xrowtor
+      set glaudit.xcur=#cur
+      set glaudit.xexch=1.0
+      set glaudit.xsub=''
+      str ig=caitem.xgitem(xitem)
+      str trn=#sub(xtornum,0,4)
+  
+      if xfwh .ne. ""
+  		  set glaudit.xdiv=xfdiv
+  		  set glaudit.xsec=xfsec
+  		  set glaudit.xproj=xfproj
+
+  		  set typegli="Inventory"
+  		  set glaudit.xacc=imgli.xaccinv("  ximtrn='"+trn+"'  and xgitem='"+ig+"' and xwh='"+xfwh+"'")
+  		  if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xaccinv("  ximtrn='"+trn+"'and xwh='"+xfwh+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xaccinv("  ximtrn='"+trn+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 error " GL Interface for "+yupegli+"/"+trn+" Not Found "
+      	end if
+      	comp glaudit.xlineamt=0.0 - xval
+      	set glaudit.xtypegli=typegli+"-Out"
+      	insert glaudit
+
+      	//contra
+
+      	set typegli="Contra"
+      	set glaudit.xacc=imgli.xacccon("  ximtrn='"+trn+"'  and xgitem='"+ig+"' and xwh='"+xfwh+"'")
+      	if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xacccon("  ximtrn='"+trn+"'and xwh='"+xfwh+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xacccon("  ximtrn='"+trn+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 error " GL Interface for "+typegli+"/"+trn+" Not Found "
+      	end if
+      	set glaudit.xlineamt=xval
+      	set glaudit.xtypegli=typegli+"-Out"
+      	insert glaudit
+      	//print "*result="+#result
+      end if
+
+      if xtwh .ne. ""
+
+        //print "xtwh="+xtwh		
+        set glaudit.xdiv=xtdiv
+        set glaudit.xsec=xtsec
+        set glaudit.xproj=xtproj
+
+        set typegli="Inventory"
+        set glaudit.xacc=imgli.xaccinv("  ximtrn='"+trn+"'  and xgitem='"+ig+"' and xwh='"+xtwh+"'")
+        if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xaccinv("  ximtrn='"+trn+"'and xwh='"+xtwh+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xaccinv("  ximtrn='"+trn+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 error " GL Interface for "+glaudit.xtypegli+" Not Found -- Aborting "
+      	end if
+      	set glaudit.xlineamt=xval
+      	set glaudit.xtypegli=typegli+"-In"
+      	insert glaudit
+
+      	//contra
+
+      	set typegli="Contra"
+      	set glaudit.xacc=imgli.xacccon("  ximtrn='"+trn+"'  and xgitem='"+ig+"' and xwh='"+xtwh+"'")
+      	if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xacccon("  ximtrn='"+trn+"'and xwh='"+xtwh+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 set glaudit.xacc=imgli.xacccon("  ximtrn='"+trn+"'")
+      	end if
+      	if glaudit.xacc .eq. ""
+      	 error " GL Interface for "+glaudit.xtypegli+" Not Found "
+      	end if
+      	comp glaudit.xlineamt=0.0 - xval
+      	set glaudit.xtypegli=typegli+"-In"
+      	insert glaudit
+      end if
+      //print "1#result="+#result+" err="+err
+      //console "1#result="+#result+" err="+err
+    end if	
+		call fatrninsert
+		set imi = imi + 1
+	end while
+
+	if #result .eq. "false"
+	  set err=1
+	end if
+	str sysnot=imdef.xsysnot()
+    if sysnot .ne. "1"
+      set curdate=#date
+    elseif xdatecom .eq. #maxdate
+      set curdate=#date
+    else
+      set curdate=xdatecom
+    end if
+	set doctype="Transfer Order"
+	set docnum=xtornum
+	set docsource = doctype
+//print "#result="+#result+" err="+err
+  //console "#result="+#result+" err="+err
+
+	if err == 1 
+		//rollback
+	
+	else
+		set trn=""
+    //print "date="+xdatecom
+		if date .eq. ""
+      set date=xdatecom
+    end if
+	//print "calling glvoucher with: doctype: "+doctype+" docnum: "+docnum+" docsource: "+docsource
+    call glvoucher	
+		if err == 1 .or. #result .eq. "false"
+			//rollback
+		//print "Rolling Back ..."
+		else
+	    set temp=#sql(string,"update imtor set xdatecom='"+curdate+"' where xtornum='"+xtornum+"'")
+			//commit
+		//print "Commiting ..."
+		end if
+	end if
+
+
+
+//********OLD****************
+//*****************
+            
+    
+
+    set xstatustor=imtorstat.xstatustor(xtornum)
+  end if
+	
+	
+end method
