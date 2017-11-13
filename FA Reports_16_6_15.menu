@@ -1,0 +1,14 @@
+//OP Reports.menu
+//-------------------------------------------------------------------
+caption "Reports" page 3
+option                                |action
+//-------------------------------------------------------------------
+//Depreciation Schedule                 |#classPath+"/"+#servlet+"?page=*crystal faass_schedule(xyear=Year,xper=Month)"
+Fixed Asset Register            |#classPath+"/"+#servlet+"?page=*crystal famst(xcode=From Code="+famst.xcode+"=text=list famst,xcode=To Code="+famst.xcode+"=text=list famst)"
+Depreciation Schedule          |#classPath+"/"+#servlet+"?page=*crystal fadepsch(xyear=Year)"
+Fixed Asset Details(Category Wise)    |#classPath+"/"+#servlet+"?page=*crystal fatrn_cat(xcode=From Code="+famst.xcode+"=text=list famst,xcode=To Code="+famst.xcode+"=text=list famst,xastcatg=Asset Category="+xcodes.xcode("xtype like 'FA Category'")+"=text=list facat)"
+-
+//Fixed Asset Register           |#classPath+"/"+#servlet+"?page=*crystal famst(xcode=From Code="+famst.xcode+"=text=list famst,xcode=To Code="+famst.xcode+"=text=list famst)"
+//Fixed Asset Details(Location Wise)    |#classPath+"/"+#servlet+"?page=*crystal facodeloc(xcode=From Code="+famst.xcode+"=text=list famst,xcode=To Code="+famst.xcode+"=text=list famst,xastloc=Location="+xcodes.xcode("xtype like 'FA Location'")+"=text=list falocation)"
+//Fixed Asset Details(Category Wise)    |#classPath+"/"+#servlet+"?page=*crystal facodedet(xcode=From Code="+famst.xcode+"=text=list famst,xcode=To Code="+famst.xcode+"=text=list famst,xastcatg=Asset Category="+xcodes.xcode("xtype like 'FA Category'")+"=text=list facat)"
+//-------------------------------------------------------------------
