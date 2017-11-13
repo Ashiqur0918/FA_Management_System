@@ -1,0 +1,166 @@
+method glvoucher
+	//inputs: doctype,docnum,date,trn,invnum,dateinv,datedue,typerel
+if trncode .eq. ""
+  if typerel .eq. ""
+	  set typerel="GL Voucher"
+  end if
+  if docsource .eq. ""
+	  set docsource=doctype
+  end if
+	//print "trn="+trn
+	if trn .ne. ""
+		str temp=trn
+	else
+    str temp=xtrnp.xrel("xtypetrn='"+docsource+"' and xtrn='"+#sub(docnum,0,4)+"' ~
+			and xtyperel='"+typerel+"'")
+		if temp .eq. ""
+			error "Related "+typerel+" Code for "+docsource+" "+docnum+" Not Found"
+		end if
+	end if
+//print "temp="+temp	
+
+  str trncode=temp
+end if
+//print "trncode="+trncode  
+//print "doctype="+doctype  
+//print "docnum="+docnum  
+	int done = 0
+	set i = 0
+	int tries = 20
+	
+	while done == 0 .and. i < tries
+		set voucher=glheaderview.xvoucher("xdoctype='"+doctype+"' and xdocnum='"+docnum+"' and xstatusvou='Undone' ")
+    //print "voucher="+voucher
+		console "voucher*************************************************="+voucher
+    if voucher .ne. ""
+      print "Reusing Undone Voucher "+voucher
+			set xvoucher=voucher
+			buffer glheader=glheader(xvoucher)
+      set glheader.xdate=date
+      str temp=#dream(YearPer date)
+      set glheader.xyear=#dream(YearPer.year)
+      set glheader.xper=#dream(YearPer.per)
+      
+			if glheader.xlong .ct. #date
+			else
+				set glheader.xlong=glheader.xlong+#char(13)+#char(10)+"** Reposted On "+#date+" **"
+			end if
+			update glheader(xvoucher)
+			//int itemp=#sql(int, "update glheader set xdate='"+date+"', xlong=xlong||'"+#char(13)+#char(10)+"** Reposted On "+#date+" **' where xvoucher='"+voucher+"'")
+    else
+  
+//print "temp1="+trncode	
+      set voucher=#trn("GL Voucher",trncode)
+      if voucher .eq. ""
+			  error "GL Voucher of Type "+temp+" Not Found"
+      end if
+    
+
+      buffer glheader
+      set glheader.xvoucher=voucher
+      //str date=#date
+      set glheader.xdate=date
+      str temp=#dream(YearPer date)
+      set glheader.xyear=#dream(YearPer.year)
+      set glheader.xper=#dream(YearPer.per)
+      if ref .eq. ""
+        set glheader.xref=doctype+": " + docnum
+      else
+        set glheader.xref=ref
+      end if
+  
+      set glheader.xlong="** Created By System On "+#date+" **"
+
+      set glheader.xstatusjv="Balanced"
+      set glheader.xstatusjv="Posted"
+      set glheader.xapproved="1"
+
+      set glheader.xdoctype=doctype
+      set glheader.xdocnum=docnum
+      insert glheader
+    end if
+      
+    if #result .eq. "true"
+		   set done = 1
+    end if
+	
+    set i = i + 1
+    if i == tries
+			error "Cannot Create Voucher "+voucher+ " -- Tried "+tries+" Times"
+    end if
+    
+	end while
+	
+//print "docsource="+docsource+"/docnum="+docnum+"/typerel="+typerel+"/xvoucher="+voucher+"doctype="+doctype
+	
+	
+	buffer gldetail
+	set gldetail.xvoucher=voucher
+	
+
+	str clist="xcur,xexch,xacc,xsub,xdiv,xsec,xproj,xlineamt"
+	str sql="select "+clist+" from (~
+					select zid,xcur,xexch,xacc,xsub,xdiv,xsec,xproj,sum(xlineamt)as xlineamt from glaudit where ~
+					xdoctype='"+doctype+"' and xdocnum='"+docnum+"' group by zid,xcur,xexch,xacc,xsub,xdiv,xsec,xproj) tbl"
+//print "sql="+sql				 
+
+				 
+	int count=#sqlfill(sql)
+  //print "count="+count
+  //print "doctype="+doctype
+  //print "docsource="+docsource
+  //print "docnum="+docnum
+	int i = 0
+	int err=0
+	//begin
+	while i < count
+		array get(i,clist)	
+		set i = i + 1
+		set gldetail.xrowvou=i
+		set gldetail.xcur=xcur
+		set gldetail.xexch=xexch
+		set gldetail.xacc=xacc
+		set gldetail.xsub=xsub
+		set gldetail.xdiv=xdiv
+		set gldetail.xsec=xsec
+		set gldetail.xproj=xproj
+		if invnum .ne. ""
+      set gldetail.xinvnum=invnum
+      set gldetail.xdateinv=dateinv
+      set gldetail.xdatedue=datedue
+    end if
+		
+    //set gldetail.xlong=xlong
+		set gldetail.xprime=xlineamt
+		set gldetail.xaccsource=glmst.xaccsource(xacc)
+		set gldetail.xaccusage=glmst.xaccusage(xacc)
+		insert gldetail
+		int itemp=#sql(int,"update glaudit set xvoucher='"+voucher+"', xrowvou="+i+" where ~
+			xcur='"+xcur+"' and xexch="+xexch+" and xacc='"+xacc+"' and xsub='"+xsub+"' and ~
+			xdiv='"+xdiv+"' and xsec='"+xsec+"' and xproj='"+xproj+"' and ~
+			xdoctype='"+doctype+"' and xdocnum='"+docnum+"' ")
+	end while
+	
+	double diff=#sql(double,"select round(sum(xprime*xexch),2) from gldetail where xvoucher='"+voucher+"'")
+	if diff <> 0
+	  set xacc=#sql(varchar,"select xnote from castatus where xtypestatus='GL Rounding Error A/c'")
+	  if xacc .eq. ""
+	    error "Rounding Error of "+diff+" found in the voucher but no rounding error account is defined. You will need to correct the voucher manually"
+	  end if
+	
+	  buffer gldetail
+		set gldetail.xvoucher=voucher
+		set i = i + 1		
+		set gldetail.xrowvou=i
+		set gldetail.xcur=#cur
+		set gldetail.xexch=1
+		set gldetail.xacc=xacc
+		comp diff=0.0-diff
+		set gldetail.xprime=diff
+		set gldetail.xaccsource=glmst.xaccsource(xacc)
+		set gldetail.xaccusage=glmst.xaccusage(xacc)
+		insert gldetail
+	
+	end if
+	
+end method
