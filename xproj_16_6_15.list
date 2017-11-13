@@ -1,0 +1,15 @@
+     list xproj
+        table xcodes
+        order xcode
+        select "xtype='Project'"
+        navigators alpha
+        rows 8
+        objects xcode attrib(link "abc" embed onclick="return updateParent(this:'xproj')"),~
+                xlong,zactive
+
+        //totals "","Totals","","","","",sum,sum
+
+        //headers none
+     end list
+
+
