@@ -1,0 +1,16 @@
+product ERP on the Net
+
+table xtrnp
+  caption "Related Transactions"
+  columns ztime, zutime, zid, xtypetrn, xtrn, xtyperel, xrel,zactive
+  primary key zid, xtypetrn, xtrn, xtyperel
+  foreign key
+        zid references zbusiness.zid
+        zid,xtypetrn,xtrn references xtrn.zid,xtypetrn,xtrn
+  end foreign key
+  list xrel,zactive
+  field xtrn
+    display combo
+    pick "select xtrn from xtrn where xtypetrn='"+xtypetrn+"'"
+  end field
+end table
