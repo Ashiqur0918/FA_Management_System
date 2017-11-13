@@ -1,0 +1,11 @@
+method fachk
+	//print "fachk called"+mode+xstatustor
+	if mode .ne. "Issue" 		
+		set #field(Fixed.display)="hide"
+	end if
+	
+	if #check(statustor,"R") .or. #check(statustor,"P") .or. #check(statustor,"C") 	
+		set #field(Fixed.display)="disabled"
+	end if
+
+end method
