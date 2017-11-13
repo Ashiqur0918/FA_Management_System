@@ -1,0 +1,11 @@
+//fa.module
+module fa
+     caption "Fixed Assets"
+     description "You need to manage your fixed assets, account for their wear ~
+                  and tear, procurement, disposals and replacements."
+
+     transactions Fixed Asset Transaction (table:fatrn:xvoucher;default:AC--:ACT-:AD--:DP--:DEP-;GL Voucher; Transfer From IM)~
+										  (Acquisition;Acquisition By Transfer;Addition;Disposal;Depreciation)
+     codes FA Location,Company Unit,Division,FA Location,FA Category,FA Type,FA Sub Type,Country,Manufacturer
+end module
+
