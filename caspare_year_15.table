@@ -1,0 +1,16 @@
+product ERP on the Net
+
+table caspare
+  caption "Item Spare Parts"
+  
+  columns ztime,zutime,zid, xvoucher, xrowkit, xcomp, xqty, xperc,xtyperef,xqty01
+
+  primary key zid, xvoucher, xrowkit
+  
+  foreign key
+        zid references zbusiness.zid
+        zid,xvoucher references fatrn.zid,xvoucher
+        zid,xcomp references caitem.zid,xitem
+  end foreign key
+
+end table
