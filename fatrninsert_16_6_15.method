@@ -1,0 +1,82 @@
+method fatrninsert
+	set mysql = "select count(xdocnum) from fatemptrn where xdocnum='"+xtornum+"' and xdocrow='"+xrowtor+"'"
+	set fachk = 0+#sql(mysql)
+	//print mysql+fachk
+	if fachk>0
+		set xdocnum=xtornum
+		set xdocrow=xrowtor		
+		buffer fatrn		
+		buffer fatemptrn		
+		move fatrn = fatemptrn(xdocnum,xdocrow)			
+		set fatrn.xtrnfa = xtrnp.xtrn("xtypetrn='Fixed Asset Transaction' and xtyperel='Transfer From IM' and xrel='"+#sub(xtornum,0,4)+"'")
+		set fatrn.xaction = #sql("select xaction from xtrn where xtypetrn='Fixed Asset Transaction' and xtrn='"+fatrn.xtrnfa+"'")
+		set xtrnfa = fatrn.xtrnfa
+		int mycount = 1
+		while mycount<=xqty
+		set fatrn.xvoucher = #trn("Fixed Asset Transaction",fatrn.xtrnfa)
+		set fatrn.xassetstat = "In Use"		
+		//print fatrn.xtrnfa+" trn fa"+fatrn.xvoucher
+		compute amt = xval/xqty
+		set fatrn.xprime = 0.0+amt
+		//set fatrn.xbase = 0.0+amt
+		set fatrn.xbase = 0.0+fatrn.xprime*fatemptrn.xexch("xdocnum='"+xtornum+"' and xdocrow='"+xrowtor+"'")
+		//******* Generate Asset Code
+			set astcat=fatemptrn.xastcatg("xdocnum='"+xtornum+"' and xdocrow='"+xrowtor+"'")
+			set astcat=#sub(astcat,0,5)		
+			//basically, Mueed is assuming the prefix to be the first 5 characters of the category
+		//print astcat+" asstcat "			
+			int last_numas=0				
+            set asstcodepre=astcat				
+            str mysql = #sql(str,"select xcode from fatrn where zid='"+#id+"' and xcode like '"+asstcodepre+"%' order by xcode desc")                
+			if #result .eq. "true" .and. mysql .ne. ""
+				//set last_numas = 0+#sub(mysql,4,8) //this is wrong				
+				set last_numas = 0+#sub(mysql,5,8)				
+			end if
+		//dprint "before="+last_numas
+			set last_numas = 1+last_numas
+		//dprint "before="+last_numas
+			set mysql = #padl(""+last_numas,8,"0")
+			
+			set fatrn.xcode = astcat+mysql
+		//dprint "xcode="+fatrn.xcode
+				
+		//********End of Asset code
+		
+		//*************Tag Code goes here
+		//***inputs - acc -- a/c code of the asset ctegory
+		//replace the next line - system only uses the last 3 digits
+		set astcategory=fatemptrn.xastcatg("xdocnum='"+xtornum+"' and xdocrow='"+xrowtor+"'")
+		set acc=cagli.xacc("xtypegli='Asset Acquisition' and xgitem='"+astcategory+"'")
+        
+      	if acc .eq. ""
+      	 error " GL Interface for "+xtrnfa+" Catagory: "+astcategory+" Not Found -- Aborting "
+      	end if
+		
+		
+		//set acc="123456789" 
+		set astcatg=fatemptrn.xastcatg("xdocnum='"+xtornum+"' and xdocrow='"+xrowtor+"'")    
+		set asttype=fatemptrn.xasttype("xdocnum='"+xtornum+"' and xdocrow='"+xrowtor+"'")    
+		call fataggen
+		//***output - tag
+		set fatrn.xtag=tag
+		//            
+		//*************Tag Code goes here
+		set fatrn.xpurdate=fatemptrn.xretdate("xdocnum='"+xtornum+"' and xdocrow='"+xrowtor+"'")
+		set fatrn.xretdate="2999-12-31"
+		insert fatrn
+		buffer famst
+		set xvoucher = fatrn.xvoucher
+		set xprime = fatrn.xprime
+		move famst = fatrn(xvoucher)
+		insert famst
+		//print #result
+		set xastcatg = astcategory
+		set xexch = fatrn.xexch
+		set xgitem=fatemptrn.xgitem(xdocnum,xdocrow)
+		//print "xgitem="+xgitem
+		call fatogltrf
+		
+		set mycount = 0+mycount+1
+		end while
+	end if
+end method
