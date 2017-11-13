@@ -1,0 +1,122 @@
+//FIXED ASSET Fields
+//-------------------------------------------------------------------------------------------------------------------
+name            |caption                            |storage |length|scale|display|hei|wid|form|def|help|doc|det|valid|attrib|font|calc|pick
+//--------------|-----------------------------------|--------|------|-----|-------|---|---|----|---|----|---|---|-----|------|----|----|----
+xasttype      |Asset Type                           |varchar |   100|    0|combo       |  1|10|    |   |    |   |   |     |      |    |    |
+xleasestat	  |Lease Status          				|varchar |   100|    0|combo   	  |  1|20|    |   |    |   |   |     |      |    |    |"1-Yes,2-No,3-N/A"
+xmortgstat	  |Mortgage Status          			|varchar |   100|    0|combo   	  |  1|20|    |   |    |   |   |     |      |    |    |"1-Yes,2-No,3-N/A"
+xcondition	  |Condition                            |varchar |   100|    0|combo      |  1|10|    |   |    |   |   |     |      |    |    |"Good,Not so good,Bad"
+xmfgyear      |Manufacturing Year                   |int     |    -1|    0|text       |  1| 4|    |   |    |   |   |     |      |    |    |
+xmanufacturer |Manufacturer                         |varchar |   100|    0|combo      |  1|20|    |   |    |   |   |     |      |    |    |code Manufacturer
+xarea     	  |Area                                 |varchar |   100|    0|combo  	  |  1|20|    |   |    |   |   |     |      |    |    |code
+xmouza    	  |Mouza                                |varchar |   100|    0|combo  	  |  1|20|    |   |    |   |   |     |      |    |    |code
+xareagovt 	  |Area as per Govt. Record             |decimal |    20|    2|text   	  |  1|20|    |   |    |   |   |     |      |    |    |
+xareaphys 	  |Area Physical Measurement            |decimal |    20|    2|text   	  |  1|20|    |   |    |   |   |     |      |    |    |
+xaruntgovt	  |Unit                                 |varchar |   100|    0|combo      |  1|20|    |   |    |   |   |     |      |    |    |"Acre,Khata,Bigha,Decimal"
+xaruntphys	  |Unit                                 |varchar |   100|    0|combo      |  1|20|    |   |    |   |   |     |      |    |    |"Acre,Khata,Bigha,Decimal"
+xdistrict     |District                             |varchar |    50|    0|combo  	  |  1|20|    |   |    |   |   |     |      |    |    |code
+xsubdept  	  |Sub Department                       |varchar |   100|    0|combo      |  1|30|    |   |    |   |   |     |      |    |    |code                                                                   
+xmaxload        |Maximum Loading Capacity           |decimal |    20|    3|text       |  1|20|    |   |    |   |   |     |      |    |    |
+xthana    	  |Thana                                |varchar |   100|    0|combo  	  |  1|20|    |   |    |   |   |     |      |    |    |code
+xprrate       |Present Repayment Rate               |decimal |    20|    2|text       |  1|20|    |0  |    |   |   |     |      |    |    |
+xtotdeduc     |Total Deducted Amount                |decimal |    20|    2|text       |  1|20|    |0  |    |   |   |     |      |    |    |
+xprobfrdate   |Probation Period From                |date	 |    -1|    0|text       |  1|10|    |   |    |   |   |     |      |    |    |
+xprobtodate   |Probation Period To                  |date	 |    -1|    0|text       |  1|10|    |   |    |   |   |     |      |    |    |
+xdpddnt       |Dependent Dental                     |decimal |    20|    2|text       |  1|20|    |   |    |   |   |     |      |    |    |
+xcondate      |Confirm Date                         |date	 |    -1|    0|text       |  1|10|    |   |    |   |   |     |      |    |    |
+xtrandate     |Resign Date                          |date	 |    -1|    0|text       |  1|10|    |   |    |   |   |     |      |    |    |
+xbudramt1     |Revised Budget Value1                |decimal |    20|    2|text       |  1|20|    |   |    |   |   |     |      |    |    |
+xbuddt        |Budget Date                          |date	 |    -1|    0|text       |  1|10|    |   |    |   |   |     |      |    |    |
+xtraintype    |Type of Training                     |varchar |   100|    0|combo      |  1|30|    |   |    |   |   |     |      |    |    |
+xvhcat        |Vehicle Category                     |varchar |   100|    0|combo      |  1|20|    |   |    |   |   |     |      |    |    |code Vehicle Category
+xperofroad    |Duration Off Road (Month)            |int     |    -1|    0|text       |  1| 4|    |   |    |   |   |     |      |    |    |
+xperreppan    |Duration Of Repair at Panel (Month)  |int     |    -1|    0|text       |  1| 4|    |   |    |   |   |     |      |    |    |
+xperrepair    |Expected Duration Of Repair (Month)  |int     |    -1|    0|text       |  1| 4|    |   |    |   |   |     |      |    |    |
+xpbpn     	  |Pass Book Page No    				|varchar |   100|    0|text    	  |  4|20|    |   |    |   |   |     |      |    |    |
+xinstalno     |Total Instalment No                  |int     |    -1|    0|text       |  1| 4|    |   |    |   |   |     |      |    |    |
+xacccat       |Duty Category                        |varchar |   100|    0|combo      |  1|10|    |   |    |   |   |     |      |    |    |
+xtrnfa        |Fixed Asset Transaction Prefix		|char    |     4|    0|combo      |  1| 4|    |   |    |   |   |     |      |    |    |select xtrn from xtrn where xtypetrn = 'Fixed Asset Transaction' and zactive='1'
+xdesc03       |Description 3                        |varchar |   100|    0|text       |  1|50|    |   |    |   |   |     |      |    |    |
+xdesc04       |Description 4                        |varchar |   100|    0|text       |  1|50|    |   |    |   |   |     |      |    |    |
+xdesc05       |Description 5                        |varchar |   100|    0|text       |  1|50|    |   |    |   |   |     |      |    |    |
+xdesc06       |Description 6                        |varchar |   100|    0|text       |  1|50|    |   |    |   |   |     |      |    |    |
+xdesc07       |Description 7                        |varchar |   100|    0|text       |  1|50|    |   |    |   |   |     |      |    |    |
+xdesc08       |Description 8                        |varchar |   100|    0|text       |  1|50|    |   |    |   |   |     |      |    |    |
+
+xastname        |Asset Description                  |varchar |   250|    0|text   |  2| 40|    |   |    |   |   |     |      |    |    |
+xastbook        |Book No                            |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xastcatg        |Asset Category                     |varchar |    50|    0|combo   |  1| 10|    |   |    |   |   |     |      |    |    |code FA Category
+xasttype        |Asset Type                         |varchar |    50|    0|combo   |  1| 10|    |   |    |   |   |     |      |    |    |code FA Type
+xastunit        |Unit                               |varchar |    50|    0|combo   |  1| 10|    |   |    |   |   |     |      |    |    |
+xastloc         |Location                           |varchar |    50|    0|combo   |  1| 10|    |   |    |   |   |     |      |    |    |
+xastbr          |Branch                             |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xdepmeth        |Depreciation Method                |varchar |    250|    0|combo  |  1| 20|    |   |    |   |   |     |      |    |    |
+xpurdate        |Date of Purchase                   |datetime|    -1|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xinvno          |Invoice Number                     |varchar |    50|    0|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xnomlife        |Nominal Life (in Months)           |decimal |    20|    4|text   |  1|  5|    |   |    |   |   |     |      |    |    |
+xestlife        |Estimated Life (in Months)         |decimal |    20|    4|text   |  1|  5|    |   |    |   |   |     |      |    |    |
+xslvval         |Salvage Value                      |decimal |    20|    4|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xretdate        |Retire Date                        |datetime|    -1|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xcuradd         |Currency of Addition               |varchar |    50|    0|combo  |  1| 20|    |   |    |   |   |     |      |    |    |currency
+xexchadd        |Exchange Rate on Addition          |decimal |    20|    6|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xprimeadd       |Prime Amount on Addition           |decimal |    20|    2|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xbaseadd        |Base Amount on Addition            |decimal |    20|    2|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xrebkval        |Revised Book Value                 |decimal |    20|    4|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xredate         |Date of Revision                   |datetime|    -1|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xdisval         |Disposal Value                     |decimal |    20|    4|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xdisdate        |Date of Disposal                   |datetime|    -1|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xsaleval        |Sale Value                         |decimal |    20|    4|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xsaledate       |Sale Date                          |datetime|    -1|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xscrpval        |Scrap Value                        |decimal |    20|    4|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xscrpdate       |Scrap Date                         |datetime|    -1|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xprvunit        |Previous Unit                      |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xprvloc         |Previous Location                  |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xprvbr          |Previous Branch                    |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xprvdiv         |Previous Division                  |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xprvsec         |Previous Section                   |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xprvproj        |Previous Project                   |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xglref          |GL Voucher Reference               |varchar |    50|    0|text   |  1| 10|    |   |    |   |   |     |      |    |    |
+xdepfactor      |Depreciation Rate                  |decimal |    20|    2|text   |  1| 20|    |   |    |   |   |     |      |    |    |
+xassetstat	    |Asset Status             			|varchar |   100|    0|combo  |  1|20|    |   |    |   |   |     |      |    |    |"In Use,Disposed Off,Retired,Not In Use"                                                                   
+xmanufacturer   |Manufacturer                       |varchar |   100|    0|combo  |  1|20|    |   |    |   |   |     |      |    |    |code Manufacturer
+xfatrn          |FA Transaction Codes               |varchar |   100|    0|combo  |  1| 4|    |   |    |   |   |     |      |    |    |code Fixed Asset Transaction
+xsubdr          |Debit Sub Account                  |varchar |   100|    0|text   |  1|20|    |   |    |   |   |     |      |    |    |
+xsubcr          |Credit Sub Account                 |varchar |   100|    0|text   |  1|20|    |   |    |   |   |     |      |    |    |
+
+
+//xaddval         |Added Value           |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xunit1          |Unit 1               |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstloc1        |Location             |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstunt1        |Old Location          |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstbok1        |Old Book No           |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstcat1        |Old Project           |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstprj1        |Old Section          |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmsttat1        |Old Asset Type        |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xfatype1        |Asset Type 1         |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstbra2        |Old Branch           |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstdiv1        |Old Divition         |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstfat1        |Branch               |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstrat1        |Branch               |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xmstbra1  |Old category          |varchar |    50|  0|text   |1|10|    |   |    |   |   |     |      |    |   |
+//xmstra1   |category             |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xdeprate |Depreciation Rate    |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xdefi    | Defination          |varchar |    50|    0|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xcategory1|category             |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xbranch1  |Branch 1             |varchar|     50|    0|text   |1|10|    |   |    |   |   |     |      |    |    |
+//xrestlife |Re Estimeted Life    |varchar |    50|    0|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xdepval   |Depriciate Value      |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xnetvalue |Net Book Value        |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xestunit  |Estimated Unit        |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xrestunit |Re Estimated Unit     |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xreslvval |ReSalvage Value       |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xdisflag  |Flag                 |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |     |
+
+//xcBal    |Cap Balance           |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xaBal    |Balance               |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xdBal    |Current Per Dep       |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xadBal   |Addition              |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//xdiBal   | Cap Balance          |decimal |    20|    4|text    |1|20|    |   |    |   |   |     |      |    |    |
+//FA Trn Entry
+//xconflag  |ConFlag              |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |     |
+//xsusflag  |Suspend Flag         |varchar |    50|    0|text   |1|10|    |   |    |   |   |     |      |    |     |
+
