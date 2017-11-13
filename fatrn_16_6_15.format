@@ -1,0 +1,109 @@
+format fatrn
+  file fatrn.csv
+  table fatrn
+  fdelimiter ,
+  rdelimiter \r\n
+  skip 1
+
+
+
+columns   zid,xvoucher,xdate,xyear,xper,xcode,xastname,xastcatg,xastbook,xasttype,~
+          xastunit,xastbr,xastloc,xdiv,xsec,xproj,xdepmeth,~
+          xpurdate,xcur,xexch,xprime,xbase,xsup,xinvno,~
+          xnomlife,xestlife,xslvval,xretdate,xdepfactor,~
+          xprvunit,xprvbr,xprvloc,xprvdiv,xprvsec,xprvproj,~
+          xleasestat,xmortgstat,xassetstat,xpornum,xdateto,xcus,xmodel,xcondition,~
+          xmaxload,xunitalt,xmfgyear,xorigin,xmanufacturer,xarea,xthana,xmouza,~
+		  xareagovt,xareaphys,xaruntgovt,xaruntphys,xdistrict,xdept,xsubdept,xglref,xlong,~
+		  xdateord,xname,xalias,xrate,xratesys,xmarginsys,xinstalno,xappamt,xacccat,xtrnfa,~
+		  xempnum,xdatework,xdocnum,xdocrow,xaction,xtag
+  
+event before
+
+	set fatrn.zid=#id
+    set fatrn.xvoucher=#trn("Fixed Asset Transaction","AC--")
+	
+	
+			int offset
+              int per
+              int year=#sub(fatrn.xdate,0,4)
+              
+              set offset=castatus.xinteger("zid='"+#id+"' and xtypestatus='GL Period Offset'")
+              set per=12+#sub(fatrn.xdate,5,2)-offset
+              if per<=12
+                 set fatrn.xper=per
+                 set fatrn.xyear=year-1
+              else
+                 set fatrn.xper=per-12
+                 set fatrn.xyear=year
+              end if
+	 
+		set fatrn.xaction = "Acquisition"
+		set fatrn.xtrnfa = "AC--"
+		
+			set astcategory=fatrn.xastcatg
+				
+			set astcat=#sub(fatrn.xastcatg,0,5)		
+			//print astcat+" asstcat "			
+			set last_numas=0				
+            set asstcodepre=astcat				
+            str mysql = #sql(str,"select xcode from fatrn where zid='"+#id+"' and xcode like '"+asstcodepre+"%' order by xcode desc")                
+			if #result .eq. "true" .and. mysql .ne. ""
+				set last_numas = 0+#sub(mysql,5,8)				
+			end if
+			set last_numas = 1+last_numas
+			set mysql = #padl(""+last_numas,8,"0")			
+			set fatrn.xcode = astcat+mysql
+			
+			
+			
+				//set acc=cagli.xacc("xtypegli='Asset Acquisition' and xgitem='"+astcategory+"'")
+        
+				set acc=fatrn.xacccat
+				//set acc="123456789" 
+        
+    set astcatg=fatrn.xastcatg
+    set asttype=fatrn.xasttype
+        //removed for invivos
+				//call fataggen
+				//***output - tag
+				//set fatrn.xtag=tag
+			//set fatrn.xdateto=fatrn.xpurdate
+      //set fatrn.xtag=fatrn.xglref
+		end event		
+		event after		
+			buffer famst
+			move famst=fatrn
+			set famst.xmaxload = 0
+			set famst.xareagovt = 0
+			set famst.xareaphys = 0
+      
+			insert famst
+			
+			//str temp=xcodes.xcode("xtype='FA Category' and xcode='"+fatrn.xastcatg+"'")
+			//if temp .eq. ""
+			//buffer xcodes
+			//set xcodes.xtype="FA Category"
+			//set xcodes.xcode=fatrn.xastcatg
+			//set xcodes.zactive="1"
+			//insert xcodes
+			//end if
+			
+			//str temp1=xcodes.xcode("xtype='FA Location' and xcode='"+fatrn.xastloc+"'")
+			//if temp1 .eq. ""
+			//buffer xcodes
+			//set xcodes.xtype="FA Location"
+			//set xcodes.xcode=fatrn.xastloc
+			//set xcodes.zactive="1"
+			//insert xcodes
+			//end if
+			move #local=fatrn
+			//print "xastcatg="+xastcatg
+			//print "fatrn.xastcatg="+fatrn.xastcatg
+			call fatoglacq
+		end event		 
+    
+
+end format
+
+
