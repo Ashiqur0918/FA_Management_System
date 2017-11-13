@@ -1,0 +1,122 @@
+zid,xacc,xdesc,xacctype,xaccusage
+650611,1-11101,Leasehold Land,Asset,Ledger
+650611,1-11102,Leasehold Land - AD,Asset,Ledger
+650611,1-11201,Taconic Capitalisation Cost,Asset,Ledger
+650611,1-11202,Taconic Capitalisation Cost - AD,Asset,Ledger
+650611,1-11203,LMDC Consultant Fee,Asset,Ledger
+650611,1-11204,LMDC Consultant Fee - AD,Asset,Ledger
+650611,1-11205,Build Cost,Asset,Ledger
+650611,1-11206,Build Cost -AD,Asset,Ledger
+650611,1-11207,LCK - Other Prof Services,Asset,Ledger
+650611,1-11208,LCK - Other Prof Services - AD,Asset,Ledger
+650611,1-11209,Taconic Onsite Startup Training,Asset,Ledger
+650611,1-11210,Taconic Onsite Startup Training - AD,Asset,Ledger
+650611,1-11211,LCK - Authority Fee,Asset,Ledger
+650611,1-11212,LCK - Authority Fee - AD,Asset,Ledger
+650611,1-11213,Piling Works,Asset,Ledger
+650611,1-11214,Piling Works - AD,Asset,Ledger
+650611,1-11215,Main Electrical System,Asset,Ledger
+650611,1-11216,Main Electrical System - AD,Asset,Ledger
+650611,1-11217,Emergency Generator Set,Asset,Ledger
+650611,1-11218,Emergency Generator Set - AD,Asset,Ledger
+650611,1-11219,Lightning Protection System,Asset,Ledger
+650611,1-11220,Lightning Protection System - AD,Asset,Ledger
+650611,1-11301,Leasehold Land - NUS Care,Asset,Ledger
+650611,1-11302,Leasehold Land NUS Care - AD,Asset,Ledger
+650611,1-11400,Leasehold Land Improvement - NUS Care,Asset,Ledger
+650611,1-12101,Pallet Truck,Asset,Ledger
+650611,1-12102,Pallet Truck - AD,Asset,Ledger
+650611,1-12103,Cage Racks,Asset,Ledger
+650611,1-12104,Cage Racks - AD,Asset,Ledger
+650611,1-12105,Transfer Containers,Asset,Ledger
+650611,1-12106,Transfer Containers - AD,Asset,Ledger
+650611,1-12107,QC Lab Equipment,Asset,Ledger
+650611,1-12108,QC Lab Equipment - AD,Asset,Ledger
+650611,1-12109,Metal Equipment,Asset,Ledger
+650611,1-12110,Metal Equipment - AD,Asset,Ledger
+650611,1-12111,Semi Rigid Isolators,Asset,Ledger
+650611,1-12112,Semi Rigid Isolators - AD,Asset,Ledger
+650611,1-12113,VHP Generator,Asset,Ledger
+650611,1-12114,VHP Generator - AD,Asset,Ledger
+650611,1-12115,Electrical Goods,Asset,Ledger
+650611,1-12116,Electrical Goods - AD,Asset,Ledger
+650611,1-12117,Safety Cabinets,Asset,Ledger
+650611,1-12118,Safety Cabinets - AD,Asset,Ledger
+650611,1-12119,Other Process Equipment,Asset,Ledger
+650611,1-12120,Other Process Equipment - AD,Asset,Ledger
+650611,1-12201,Hosereel System,Asset,Ledger
+650611,1-12202,Hosereel System - AD,Asset,Ledger
+650611,1-12203,Clean Gas Extinguishing System,Asset,Ledger
+650611,1-12204,Clean Gas Extinguishing System - AD,Asset,Ledger
+650611,1-12205,Fire Alarm System,Asset,Ledger
+650611,1-12206,Fire Alarm System - AD,Asset,Ledger
+650611,1-12207,Audio Visual System,Asset,Ledger
+650611,1-12208,Audio Visual System - AD,Asset,Ledger
+650611,1-12209,Security System,Asset,Ledger
+650611,1-12210,Security System - AD,Asset,Ledger
+650611,1-12211,KVM Switch,Asset,Ledger
+650611,1-12212,KVM Switch - AD,Asset,Ledger
+650611,1-12213,ACMV System (BMS),Asset,Ledger
+650611,1-12214,ACMV System (BMS) - AD,Asset,Ledger
+650611,1-12215,ACMV System (Sensaphone),Asset,Ledger
+650611,1-12216,ACMV System (Sensaphone) - AD,Asset,Ledger
+650611,1-12301,Domestic Water System,Asset,Ledger
+650611,1-12302,Domestic Water System - AD,Asset,Ledger
+650611,1-12303,Domestic Water Tank,Asset,Ledger
+650611,1-12304,Domestic Water Tank - AD,Asset,Ledger
+650611,1-12305,Hot Water Recirculation System,Asset,Ledger
+650611,1-12306,Hot Water Recirculation System -AD,Asset,Ledger
+650611,1-12307,Boiler System,Asset,Ledger
+650611,1-12308,Boiler System -AD,Asset,Ledger
+650611,1-12309,CO2 System,Asset,Ledger
+650611,1-12310,CO2 System -AD,Asset,Ledger
+650611,1-12311,Compressed Dry Air System,Asset,Ledger
+650611,1-12312,Compressed Dry Air System -AD,Asset,Ledger
+650611,1-12313,LPG System,Asset,Ledger
+650611,1-12314,LPG System -AD,Asset,Ledger
+650611,1-12315,RO Animal Watering System,Asset,Ledger
+650611,1-12316,RO Animal Watering System -AD,Asset,Ledger
+650611,1-12401,Steris Finn Sterilizer 1,Asset,Ledger
+650611,1-12402,Steris Finn Sterilizer 1 - AD,Asset,Ledger
+650611,1-12403,Steris Finn Sterilizer 2,Asset,Ledger
+650611,1-12404,Steris Finn Sterilizer 2 - AD,Asset,Ledger
+650611,1-12405,IWT Auto Tunnel Washer 1,Asset,Ledger
+650611,1-12406,IWT Auto Tunnel Washer 1 - AD,Asset,Ledger
+650611,1-12407,IWT Cage Rack Washer,Asset,Ledger
+650611,1-12408,IWT Cage Rack Washer -AD,Asset,Ledger
+650611,1-12409,BHS (Bedding Handling) System,Asset,Ledger
+650611,1-12410,BHS (Bedding Handling) System -AD,Asset,Ledger
+650611,1-12411,Pass Thru Port,Asset,Ledger
+650611,1-12412,Pass Thru Port - AD,Asset,Ledger
+650611,1-12501,Auto Tube Brushing System,Asset,Ledger
+650611,1-12502,Auto Tube Brushing System -AD,Asset,Ledger
+650611,1-12503,Spare AHU Motor,Asset,Ledger
+650611,1-12504,Spare AHU Motor -AD,Asset,Ledger
+650611,1-12505,Water Cooled Chiller 1-2 & Air Cooled Chiller 3,Asset,Ledger
+650611,1-12506,Water Cooled Chiller 1-2 & Air Cooled Chiller 3 -AD,Asset,Ledger
+650611,1-13101,Computers & Software,Asset,Ledger
+650611,1-13102,Computers & Software -AD,Asset,Ledger
+650611,1-14101,Communication Systems,Asset,Ledger
+650611,1-14102,Communication Systems - AD,Asset,Ledger
+650611,1-14103,Other Office Equipment,Asset,Ledger
+650611,1-14104,Other Office Equipment -AD,Asset,Ledger
+650611,1-14105,IT Equipment,Asset,Ledger
+650611,1-14106,IT Equipment -AD,Asset,Ledger
+650611,1-15101,Furniture & Fittings,Asset,Ledger
+650611,1-15102,Furniture & Fittings - AD,Asset,Ledger
+650611,1-15103,Laminar Flow Cabinet,Asset,Ledger
+650611,1-15104,Laminar Flow Cabinet -AD,Asset,Ledger
+650611,1-16101,Truck,Asset,Ledger
+650611,1-16102,Truck -AD,Asset,Ledger
+650611,1-17100,Deferred Tax asset,Asset,Ledger
+650611,1-21101,CTB Operating - Acc No: 0852114029,Asset,Bank
+650611,1-21102,CTB Payroll - Acc No: 0852114002,Asset,Bank
+650611,1-21201,CTB Term Deposit - Acc No: 0852114000,Asset,Bank
+650611,1-22101,Breed Stock - Mice,Asset,Ledger
+650611,1-22102,Breed Stock Mice - AD,Asset,Ledger
+650611,1-22103,Breed Stock- Rats,Asset,Ledger
+650611,1-22104,Breed Stock Rats -AD,Asset,Ledger
+650611,1-22105,Breed Stock- Guinea Pigs,Asset,Ledger
+650611,1-22106,Breed Stock Guinea Pigs -AD,Asset,Ledger
+650611,1-22107,Breed Stock Rabbits,Asset,Ledger
+650611,1-22108,Breed Stock Rabbits -AD,Asset,Ledger
