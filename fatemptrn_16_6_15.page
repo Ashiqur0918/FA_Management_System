@@ -1,0 +1,252 @@
+page fatemptrn
+
+	 embed onload="move_caret('one','xdate')"
+     caption "Fixed Asset Specification for "+xdocnum+" Row: "+xdocrow
+     
+     sections form one, list one,text top, script myscript
+
+     text top
+      "<a href=#top title='Go Top of this Page'><p>Back To Top</p></a>"
+     end text
+     
+     text primage
+         "<img border=0 src='"+xlink+"' height='150' width='150' ></img>"
+     end text
+
+
+     list one
+        table fatemptrn
+        caption "List of Transactions"
+        order xdocnum,xdocrow DESC
+		fixed xdocnum,xdocrow 
+        //select "(xvoucher like 'AC%')"
+        rows 20
+        objects   xdocnum,xdocrow attrib(link #servlet+"?page="+page+"&command=Show&xdocnum=?&xdocrow=?"),~
+                 xastname,xdepmeth,xdepfactor,xastcatg,xcur,xexch
+     end list
+
+     form one
+		valid valid//,access
+        table fatemptrn
+        order xdocnum,xdocrow DESC
+		fixed xdocnum,xdocrow 
+        //select "(xvoucher like 'AC%')"        
+        layout 2
+        objects Add,Show,Clear, Update, Top, Previous, Delete, Next, Bottom,Back,~//Lease Details,Details,
+                xdate default(#d) attrib(mandatory),xdiv,xdept,xastloc attrib(mandatory),~
+                xastcatg attrib(attach;mandatory),mycatname,xasttype attrib(mandatory),xsubdept,xyear display(hide),xper display(hide),~
+				xastname attrib(mandatory),xastunit display(hide),xsec display(hide),xproj,xdepmeth,xslvval wid(10),~
+				xnomlife,xestlife,xretdate attrib(mandatory),xdepfactor,xcur,xexch,xgitem display(const) 
+        
+		field xdept
+			caption Department
+            pick "select xcode from xcodes where zid='"+#id+"' and xtype='Division'"
+        end field 
+
+		field xdepfactor
+			caption Depreciation Rate(%) 
+			wid 10
+		end field		
+		
+		field mycatname		
+            attrib local
+            display const
+            event after
+                set mysql = "select xdescdet from xcodes where zid='"+#id+"' and xcode='"+xastcatg+"' and xtype='FA Category'"
+				set mycatname=#sql(mysql)
+				//print mysql+mycatname
+            end event
+        end field
+
+        field xsec
+          caption Section
+          display text
+          pick
+        end field     
+ 	        
+        field xsubdept
+        	caption Asset Sub Type
+        	pick "select xcode from xcodes where zid='"+#id+"' and xtype='FA Type1'"
+        	width 10
+        	event after
+        		set globals(xsubdept)=xsubdept
+        	end event
+        end field
+
+        field xdiv
+            caption Company Unit
+            pick "select xcode from xcodes where zid='"+#id+"' and xtype='Company Unit'"
+        end field
+     
+        field xastcatg
+          	caption Asset Category          	
+          	//display text
+            //width 30
+          	pick  code FA Category //list xastcatg
+	        event after
+	        	set globals(xastcatg)=xastcatg
+	        end event
+        end field
+
+		field xastloc
+			pick code FA Location //list falocation
+            display combo
+            //pick
+            //width 20
+		end field
+                
+        field xproj
+			display hide
+        end field
+
+		field xasttype
+			caption Asset Type
+			pick code FA Type //list fatype
+			event after
+				set globals(xasttype)=xasttype
+			end event          
+		end field
+		
+		field xastname				
+			event after
+				set xastname=caitem.xdesc("xitem='"+xitem+"'")
+			end event          
+		end field
+
+        field xcur
+          //display hide
+          //pick          
+        end field
+
+        field xexch
+          default "1.00"
+		  wid 10
+		  //display hide
+        end field
+
+        field xdepmeth
+          display combo
+          pick "SL - Straight Line,RB - Reducing Balance"//,DD - Double Declining Balance,SY - Sum of the Years Digit,SP - Special"
+          //display text
+          default "SL - Straight Line"
+          //attrib readonly
+        end field
+
+        field xbase
+          display hide
+          event before            
+            set xbase = 0.0+xprime*xexch
+          end event
+        end field
+   
+        field xprime
+        	caption Asset Value
+        end field
+        
+        field xdate
+			caption Acquisition Date
+        	event after
+        		set globals(xdate) = xdate
+        	end event
+        end field
+		
+		field xretdate
+			caption Date of Purchase
+        	event after
+        		set globals(xretdate) = xretdate
+        	end event
+        end field
+ 
+	
+        embed onsubmit="submitit(this)"
+
+        field Back
+          embed onclick="clicked(this)"
+        end field
+        
+//        field lease
+//          embed onclick="lease()"
+//        end field
+
+     end form
+
+     script myscript
+
+      <script language="javascript" type="text/javascript">
+        var detail="" 
+
+        function clicked(b){
+          detail="clicked"
+        }
+        
+        function lease(){
+          detail="lease"
+        }
+
+        function submitit(form){
+          if (detail=="clicked"){
+           form.page.value = "imtor"
+			form.nexttab.value = "Details"
+            form.searchbutton.value = "Find xtornum=?&xrowtor=?"
+          }
+
+          if (detail=="lease"){
+            form.page.value = "leaseland"
+            form.searchbutton.value = "Top"
+          }
+        }
+
+        function pickAsset(link){
+          if (navigator.appName.indexOf("Netscape") >= 0){
+            document.one.xcode_ONE.value=link.text.substring(0,4)
+            document.one.xcode_TWO.value=link.text.substring(4)
+          }else{
+            document.one.xcode_ONE.value=link.innerText.substring(0,4)
+            document.one.xcode_TWO.value=link.innerText.substring(4)
+          }
+          return false
+        }
+
+      </script>
+     end script
+
+     
+
+	valid valid
+		before Add,Update
+			int offset
+				set xgitem=caitem.xgitem(xitem)
+             int per
+                 int year=#sub(xdate,0,4)
+
+                 int tempper
+                 int tempyear
+                 set offset=castatus.xinteger("zid='"+#id+"' and xtypestatus='GL Period Offset'")
+                 set per=12+#sub(xdate,5,2)-offset
+                 if per<=12
+                    set xper=per
+                    set xyear=year-1
+                 else
+                    set xper=per-12
+                    set xyear=year
+                 end if
+		end before
+		preconfig
+			set xdocnum=xtornum
+			set xdocrow = xrowtor
+		end preconfig
+		config
+			set #fields(dumdesc->.display)="hidden"
+			set xglvoucher=glheader.xvoucher("xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher+"'")
+			set xvoucherlink="<a href='"+#servlet+"?page=glheader&xvoucher="+xglvoucher+"&command=Show&embeddedpage=1' target='New'>"+xglvoucher+"</a>"
+			if xglvoucher .ne. ""
+				set #fields(Post.display)="disabled"
+				set #fields(Delete.display)="disabled"
+				set #fields(Update.display)="disabled"
+			end if
+				set xgitem=caitem.xgitem(xitem)
+		end config
+	end valid
+
+#include access.valid	
+end page
