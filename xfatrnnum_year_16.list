@@ -1,0 +1,15 @@
+     list xfatrnnum
+		caption "FA Trn List for: "+xaction //**NOWAY** globals(xaction)
+        table fatrn
+        order xvoucher
+        //select "(xaction = '"+globals(xaction)+"')"
+        //select "(xaction = '"+xaction+"')"
+        //navigators alpha
+		select #query(zvalue xvoucher,xcode,xastcatg,xasttype,xastname,xleasestat,xempnum)
+        rows 20
+        
+        objects xvoucher attrib(link "abc" embed onclick="return updateParent(this:'')"), ~
+                xcode,xastcatg,xasttype,xastname,xdate,xleasestat,xempnum
+      end list
+
+
