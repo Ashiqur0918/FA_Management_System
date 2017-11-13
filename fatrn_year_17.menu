@@ -1,0 +1,14 @@
+//Suppliers.menu
+//-----------------------------------------------------------------------------
+caption "Transaction Entry" //page 3
+option                      	|action
+//-----------------------------------------------------------------------------
+Acquisition Entry            	|#classPath+"/"+#servlet+"?page=fatrn_acc"
+Acquisition By Transfer      	|#classPath+"/"+#servlet+"?page=imtor&mode=Issue"
+Addition Entry              	|#classPath+"/"+#servlet+"?page=fatrn_add"
+Disposal Entry              	|#classPath+"/"+#servlet+"?page=fatrn_desp"
+Depreciation Entry              |#classPath+"/"+#servlet+"?page=fatrn_depr&command=clear"
+Transfer Entry              	|#classPath+"/"+#servlet+"?page=fatransfer"
+Asset Master              		|#classPath+"/"+#servlet+"?page=famst"
+//Depreciation Process      	|#classPath+"/"+#servlet+"?page=fadpprocs_mth"
+//-----------------------------------------------------------------------------
