@@ -1,0 +1,18 @@
+format caglifa
+  file caglifa.csv
+  table cagli
+  fdelimiter ,
+  rdelimiter \r\n
+  skip 1
+
+  columns zid,xtypegli,xgitem,xgcsa,xwh,xacc
+
+
+   event before
+    set cagli.zid=#id
+	//print cagli.xtypegli+"-"+cagli.xacc
+  end event
+
+end format
+
+
