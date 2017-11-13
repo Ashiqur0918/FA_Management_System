@@ -1,0 +1,30 @@
+     list facus
+        table cacus
+        order xcus
+//        select "xaccar='"+globals(xacc)+"'"
+        select "(xcus like '%"+zvalue+"%' or xorg like '%"+zvalue+"%')"
+        navigators alpha
+        rows 10
+        //objects  xcur attrib(link "Main?page=xcur&command=Show&xcur=?"),
+        objects xcus attrib(link "abc" embed onclick="return updateParent(this:'')"), ~
+                xorg,xcell,xblock,xrg
+                
+                field xcell
+                   caption Point
+                end field
+
+                field xblock
+                   caption Area
+                end field
+
+                field xrg
+                   caption Region
+                end field
+
+
+        //totals "","Totals","","","","",sum,sum
+
+        //headers none
+     end list
+
+
