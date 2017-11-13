@@ -1,0 +1,15 @@
+    list xitem_hs
+        caption "Items containing: <font color=red>"+zvalue+"</font>"
+        size 800,700
+		table caitem
+        order xitem
+        select  #query(zvalue xitem,xalias,xbarcode,xdesc,xlong)
+        navigators alpha
+        rows 10
+        objects xitem attrib(link "javascript:void(0);" embed onclick="return updateParent(this:'$')"), ~
+                xcitem,xalias,xbarcode,xdesc,~
+				xlong,xtypestk,xscode,xitemnew
+				
+    end list
+
+
