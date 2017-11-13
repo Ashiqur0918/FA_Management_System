@@ -1,0 +1,19 @@
+     list famst
+        table famst
+        order xcode
+        //select none
+        navigators alpha
+        rows 20
+		select #query(zvalue xvoucher,xcode,xastcatg,xasttype,xastname,xleasestat,xempnum)
+        //objects  xcur attrib(link "Main?page=xcur&command=Show&xcur=?"),
+        objects xcode attrib(link "abc" embed onclick="return updateParent(this:'xcode')"), ~
+                xastname,xastcatg,xastbook,xasttype
+
+
+
+        //totals "","Totals","","","","",sum,sum
+
+        //headers none
+     end list
+
+
