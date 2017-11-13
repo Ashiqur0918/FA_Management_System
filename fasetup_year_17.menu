@@ -1,0 +1,28 @@
+//Fixed Assets Settings menu
+//-------------------------------------------------------------------
+caption "Settings" //page 3
+option                      |action
+//-------------------------------------------------------------------
+General               		|#classPath+"/"+#servlet+"?page=casetup&module=fa"
+FA to GL Interface Table    |#classPath+"/"+#servlet+"?page=caglifa"
+//FA Transaction Parameters 	|#classPath+"/"+#servlet+"?page=fatrnp"
+//FA Transaction Parameters 	|#classPath+"/"+#servlet+"?page=fatrnp(xtypetrn=Fixed Asset Transaction)"
+//Monthly Depreciation      |#classPath+"/"+#servlet+"?page=fadpprocs_mth"
+//Asset Number Type         |#classPath+"/"+#servlet+"?page=xtrn(xtypetrn=Asset Number)"
+//Division Codes            |#classPath+"/"+#servlet+"?page=xdiv"|
+//FA Transaction Code       |#classPath+"/"+#servlet+"?page=xtrn(xtypetrn=Fixed Asset Transaction)"
+//Company Unit              |#classPath+"/"+#servlet+"?page=xcodes(xtype=Company Unit)"  
+//Location                  |#classPath+"/"+#servlet+"?page=xcodes(xtype=FA Location)" 
+//Employee                  |#classPath+"/"+#servlet+"?page=xcodes(xtype=Employee)" 
+//Department                |#classPath+"/"+#servlet+"?page=xcodes(xtype=Department)"
+//Sub Department            |#classPath+"/"+#servlet+"?page=xcodes(xtype=Sub Department)"
+//Asset Catagory Codes      |#classPath+"/"+#servlet+"?page=xcodes(xtype=FA Category)" 
+//Asset Type Codes       	|#classPath+"/"+#servlet+"?page=xcodes(xtype=FA Type)" 
+//Asset Sub Type Codes      |#classPath+"/"+#servlet+"?page=xcodes(xtype=FA Type1)" 
+//Manufacturer              |#classPath+"/"+#servlet+"?page=xcodes(xtype=Manufacturer)" 
+//Country                   |#classPath+"/"+#servlet+"?page=xcodes(xtype=Country)" 
+////FA to GL Interface Table |#classPath+"/"+#servlet+"?page=fagli"
+////FA to GL             	 |#classPath+"/"+#servlet+"?page=faglpost_cum"
+////Upload FA Codes 		 |#classPath+"/"+#servlet+"?page=*data xcodes,add"
+////Upload FA Data			 |#classPath+"/"+#servlet+"?page=*data fatrn,add"
+//-------------------------------------------------------------------
