@@ -1,0 +1,314 @@
+page famst
+
+    caption "Fixed Asset Master"    
+    sidebar primage 
+    sections form frmone,list one,text top, script myscript,~
+     	method chk_access, method chk_command    
+
+    text top
+      "<a href=#top title='Go Top of this Page'><p>Back To Top</p></a>"
+    end text
+
+     text primage
+         "<img border=0 src='"+xlink+"' height='150' width='150' ></img>"
+     end text
+
+   list one
+      table famst
+      order xcode
+      row 20
+      object xcode attrib(link #servlet+"?page="+page+"&command=show&xcode=?"),xtag,xastname,~
+      	xdiv,xastloc,xdept,xastcatg,xasttype
+      	
+      	field xdiv
+      		caption Company
+      	end field
+      	
+      	field xdept
+      		caption Department
+      	end field
+      	
+      	field xastloc
+      		caption Location
+      	end field
+      	
+      	field xastcatg
+      		//caption Asset Type
+      	end field
+
+      	field xasttype
+      		caption Sub Type
+      	end field
+      	      	
+   end list
+
+   form frmone  
+	valid valid,access
+      table famst
+      order xcode      
+      layout 2      
+      objects Show,Clear,Top, Previous, Next, Bottom,Update,~
+                xcode,xvoucher display(const),xdiv display(const),xastcatg attrib(attach),mycatname,xastloc display(const),~
+				xdept display(const),xsubdept display(hide),xasttype display(const),xastname display(const),~
+                xastunit display(hide),xastbr,xempnum,xdepmeth display(const),xdepfactor display(const),~
+                xdate display(const) ,xyear display(constant),xper display(constant),xsec,xproj,~
+                xcur display(const) attrib(attach),xexch display(const),xprime display(const) attrib(attach),xbase,~
+                xsup display(hide),xinvno display(hidden),~
+                xastbook display(hidden),xnomlife display(const),xestlife display(const),xtag caption(Tag No.) display(const),xglref,xslvval display(const),xretdate display(hidden),~
+                xlong,xpornum display(hidden), xpurdate display(constant), xleasestat display(hide),xmortgstat display(hide),xassetstat caption(Asset Flag)
+				
+
+        field Asset_search
+          event before
+            //**NOWAY*** class osbcustom(search(xastname,"s","famst","xcode:xastname:xastcatg","pickAsset","xcode:xastname:xdiv:xastloc:xdept:xsubdept:xastcatg:xasttype","yes","Code:Name:Unit:Location:Department:Sub Dept:Type:Sub Type"))
+          end event
+        end field
+		
+		   field xdept
+			caption Department
+            pick "select xcode from xcodes where zid='"+#id+"' and xtype='Division'"
+        end field  
+			
+		field mycatname
+		
+            attrib local
+            display const
+            event after
+                set mysql = "select xdescdet from xcodes where zid='"+#id+"' and xcode='"+xastcatg+"' and xtype='FA Category'"
+				set mycatname=#sql(mysql)
+				//print mysql+mycatname
+            end event
+        end field
+		field xassetstat
+			pick "In Use,Disposed Off,Not In Use,Retired"
+		end field
+
+         field xemp
+		 
+			pick list xempnum
+			
+        end field    
+		
+              
+        field xsubdept
+        	display text
+        	pick list xsubdept
+        	width 10
+        	event after
+        		set globals(xsubdept)=xsubdept
+        	end event
+        end field
+
+        field xdiv
+        	caption Company
+        	event after
+        		set globals(xdiv)=xdiv
+        	end event
+        end field
+
+        field xdept
+        	event after
+        		set globals(xdept)=xdept
+        	end event
+        end field
+                
+        field xastcatg
+          	caption Asset Category
+          	display const
+          	pick list xastcatg
+	        event after
+	        	set globals(xastcatg)=xastcatg
+	        end event
+        end field
+
+        field xastunit
+      		pick list faunit
+        end field
+
+		field xastloc
+			pick list falocation
+			event after
+				set globals(xastloc)=xastloc
+			end event
+		end field
+                
+       field xsec
+         display hide
+       end field
+
+       field xproj
+       	display hide
+       end field
+
+        field xvoucher
+         caption Transaction Number
+         event after
+          	set globals(xvoucher)=xvoucher
+         end event
+        end field
+
+        field xcode
+          caption Asset Code
+          width 25
+        end field
+
+        field xastbook
+          //pick list fabook
+          caption Colour
+          //display hide
+        end field
+
+        field xmortgstat
+              display text
+              caption HS Code
+              pick
+        end field
+
+
+		field xasttype
+			caption Asset Type
+			pick list fatype
+			event after
+				set globals(xasttype)=xasttype
+			end event          
+		end field
+
+        field xastbr
+          //pick list fabranch
+          display hide		
+        end field
+
+        field xcur
+          display combo
+          //pick
+          
+        end field
+
+        field xexch
+          default "1.0000"
+        end field
+
+        field xdepmeth
+//          display combo
+//          pick "SL - Straight Line,RB - Reducing Balance,DD - Double Declining Balance,SY - Sum of the Years Digit,SP - Special"
+          //display text
+          default "SL - Straight Line"
+          attrib readonly
+        end field
+
+        field xbase
+          display constant
+          event before
+            //class osbcustom(#calc(xprime,xexch,"*",2,xbase))
+            set xbase = 0.0+xprime*xexch
+          end event
+        end field
+
+        field xsupplier
+          pick list xsup
+        end field
+
+        field xglref
+		  caption Existing Asset Tag No.
+		  display constant
+        end field
+
+        field xlong
+        	display hide
+        end field
+
+        field xprime
+        	caption Asset Value
+        end field
+        
+        field xdate	
+        	event after
+        		set globals(xdate) = xdate
+        	end event
+        end field
+
+		field xlink
+			event after
+				if xlink .eq. ""
+					set xlink="docs"+#sep+"x"+#id+#sep+xcode+".jpg"
+				end if
+			end event
+		end field
+
+        embed onsubmit = "return submitit(this)"
+        field addition
+          embed onclick = "show_addition()"
+        end field
+
+        field revaluation
+          embed onclick = "show_revaluation()"
+        end field
+
+        field transfer
+          embed onclick = "show_transfer()"
+        end field
+
+        field disposal
+          embed onclick = "show_disposal()"
+        end field
+
+   end form
+
+   script myscript
+    <script language="javascript" type="text/javascript">
+
+      var flag = ""
+
+      function show_addition() {
+        //this.value=top
+        flag = "show_addition"
+      }
+
+      function show_revaluation() {
+        flag = "show_revaluation"
+      }
+
+      function show_transfer() {
+        flag = "show_transfer"
+      }
+
+      function show_disposal() {
+        flag = "show_disposal"
+      }
+
+      function submitit(form){
+        if(flag == "show_addition"){
+          form.page.value = "famstad"
+          form.searchbutton.value = "Find xcode=?"
+        }else if(flag == "show_revaluation"){
+          form.page.value = "famstrv"
+          form.searchbutton.value = "Find xcode=?"
+        }else if(flag == "show_transfer"){
+          form.page.value = "famsttr"
+          form.searchbutton.value = "Find xcode=?"
+        }else if(flag == "show_disposal"){
+          form.page.value = "famstdp"
+          form.searchbutton.value = "Find xcode=?"
+        }
+      }
+
+        function pickAsset(link){
+          if (navigator.appName.indexOf("Netscape") >= 0){
+		    document.frmone.xcode.value=link.text
+          }else{
+		    document.frmone.xcode.value=link.innerText
+          }
+          return false
+        }
+      
+    </script>
+   end script
+
+   valid valid
+		config
+		
+		end config
+   end valid
+
+#include access.valid   
+ end page
