@@ -1,0 +1,84 @@
+//caspare.include
+	group spare 2 1 "Spare Parts" //columns rows caption select
+        form spare (1, 1) //(col,row,colspan,rowspan,width,height)
+		list spare (2, 1)
+			access " xvoucher .ne. "+#char(34)+#char(34)+" 
+			//keys "Top"
+			keys "Find xvoucher=?"			
+	end group     
+     
+    valid validspare
+		preconfig
+		end preconfig
+		
+		config
+			set globals(xvoucher)=xvoucher
+		end config
+			 
+	end valid
+		 
+		 
+    form spare
+		focus item
+        valid validspare		
+        //caption "Spare Parts"
+        table caspare
+        fixed xvoucher
+        order xvoucher,xrowkit
+		layout -5
+		objects Clear, Show, Add, Update, Delete, ~
+				xrowkit attrib(row 0 10) attrib(submit Show),~
+				xcomp,xdesc attrib(local),~// picklist(select xitem from caitem),
+				xqty, xperc caption(Weightage Percentage) diaplay(hide)
+				
+		field xcomp
+			caption Component Code
+			pick list xitem_hs
+			attrib submit
+		end field
+		
+		field xrowkit
+			caption SL
+			display const
+		end field 
+		
+		field xdesc
+			display const
+			attrib local
+			
+			event after
+				set xdesc = #sql("select xdesc from caitem where xitem='"+xcomp+"'")
+			end event
+		end field
+	
+        field xqty
+			len 1
+		end field
+        
+	end form
+			
+    list spare
+        caption "Component of "+xvoucher
+        table caspare
+        order xvoucher,xrowkit
+        fixed xvoucher
+        navigators search, alpha
+        rows 20
+        objects ~
+                xrowkit attrib(link #servlet+"?page="+page+"&nexttab="+nexttab+"&command=Show&xvoucher=?&xrowkit=?"),~
+				xcomp inherits(xitem) picklist(select xitem from caitem),xqty
+        
+		field xrowkit
+			caption SL
+		end field
+		
+		field xqty
+			len 1
+		end field
+		
+		field xcomp
+			caption Component Code
+		end field
+    
+		
+	end list
