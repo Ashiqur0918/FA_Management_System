@@ -1,0 +1,495 @@
+//imtdt.include
+        //caption header
+     //sections  form one,list imtdt, script myscript
+     //dependent
+//******************************************************************************************************|
+     group details 2 1 "Details"
+       list details,form details  (1, 1)//(col,row,colspan,rowspan,width,height)
+      
+       access " xtornum .ne. "+#char(34)+#char(34)
+       keys "Find xtornum=?&xrowtor=?"
+     end group
+
+//******************************************************************************
+    list details
+        caption "Details for "+xtornum
+        table imtdt
+        order xtornum,xrowtor
+        fixed xtornum
+        rows 10
+        objects ~
+        xrowtor attrib(link #servlet+"?page="+page+"&nexttab="+nexttab+"&command=Show&xtornum=?&xrowtor=?"), ~
+        xitem,xitemext,xbatch,xfloc,xtloc,xqty,xqtyalc,xval,xrem
+
+     end list
+
+		 valid validdet
+      init
+        call casepbatch
+      end init
+      preconfig
+          call batchconfig          
+          
+          
+      end preconfig
+    before OneClick
+        call imoneclick
+      end before
+		before Release
+			call imrelease
+		end before
+		before Pick
+			call impick
+
+     end before
+		before Confirm
+			call imconfirm
+		end before
+     
+     
+        before Add,Update
+            if xqtyalc > xqty
+              set xqtyalc=xqty
+            end if
+            call cadim
+						str item=caitem.xitem(xitem)
+            if item .eq. ""
+              error "Wrong Item Code"
+            end if
+            
+            //print "xbatch="+xbatch
+            call imcheckbatch
+			end before
+      after Add, Update
+            set xtwh=imtor.xtwh(xtornum)
+            set xfwh=imtor.xfwh(xtornum)
+
+
+
+
+            if xfwh .eq. "" //receipt only
+            else
+              set xwh=xfwh
+              set xloc=xfloc
+              //TODO-Qty Check
+            end if
+
+
+
+      
+      
+      end after
+      
+      before Delete
+        if mode .eq. "Receipt"     
+          int count=#sql(int,"delete from imser where zid="+#id+" and xtypein='Transfer Order' and xnumin='"+xtornum+"' and xrowin="+xrowtor)
+        else
+          int count=#sql(int,"update imser set xtypeout='',xnumout='',xrowout=0 where zid="+#id+" and xtypeout='Transfer Order' and xnumout='"+xtornum+"' and xrowout="+xrowtor)
+        end if
+        
+      
+      end before 
+		 	config
+			
+            //call impack
+            if mode .ne. "Receipt"
+              
+            end if
+            set globals(xitem)=xitem
+            set globals(xrowtor)=xrowtor
+            set statustor=imtorstat.xstatustor("xtornum='"+xtornum+"'")
+            if #check(statustor,"PPicked") 
+            elseif #check(statustor,"R") .or. #check(statustor,"P") .or. #check(statustor,"C") 
+              set #field(Add.display)="disabled"
+              set #field(Delete.display)="disabled"
+              set #field(Update.display)="disabled"					  
+              set #field(xitem->xbatch.display)="constant"
+            end if
+            if #check(statustor,"C") 
+              set #field(xitem->.display)="constant"
+              set #field(update.display)="disabled"
+             set #field(OneClick.display)="disable"
+			end if
+		call fachk
+
+						
+//--for serial number
+    set globals(xtypeserial) =caitem.xtypeserial("xitem='"+xitem+"'")       
+    //set tempserial=caitem.xtypeserial("xitem='"+xitem+"'")
+    //        if tempserial .sw. "1"
+    //        else
+    //          set #field(SerialNumbers.display)="disabled"
+    //        end if
+			set globals(xitem)=xitem
+			set globals(xdesc)=xdesc
+      //set globals(xwh)=xwh    |Done at IMTOR
+      //set globals(xtwh)=xtwh  |
+			set globals(xqty)=xqty
+			set globals(returnpage)=page
+			set globals(returntab)=nexttab
+			set globals(trnfield)="xtornum"
+			set globals(xtornum)=xtornum
+			set globals(trnrowfield)="xrowtor"
+			if mode .eq. "Receipt"
+				set globals(xtypein)="Transfer Order"
+				set globals(xnumin)=xtornum
+				set globals(xrowin)=xrowtor
+     else
+				set globals(xtypeout)="Transfer Order"
+				set globals(xnumout)=xtornum
+				set globals(xrowout)=xrowtor
+     end if
+//-end of serial number
+
+//print "xwh="+xwh
+
+
+        if xrowtor < 1
+          set #fields(Delete.display)="disable"
+          set #fields(Update.display)="disable"
+          set #fields(Inventory.display)="disable"
+        
+        end if
+
+        
+            set xdesc=caitem.xdesc("xitem='"+xitem+"'")
+						
+						call cadim
+            
+            //call imcutconfig
+            call batchconfig
+            if mode .eq. "Receipt"
+              set #fields(xtloc.pick)="select xloc from whloc where xwh='"+xwh+"'"
+              set globals(xloc)=xtloc
+            elseif mode .eq. "Issue"
+              //print "xwh="+xwh
+              //print "xfwh="+xfwh
+              set #fields(xfloc.pick)="select xloc from imbatv where xitem='"+xitem+"' and ~
+              xitemext='"+xitemext+"' and xbatch='"+xbatch+"' and xwh='"+xwh+"' and xqty > 0" 
+              //print "pick="+#fields(xfloc.pick)
+              set globals(xloc)=xfloc
+            else
+              set xtwh=imtor.xtwh(xtornum)
+              set #fields(xtloc.pick)="select xloc from whloc where xwh='"+xtwh+"'"
+              set #fields(xfloc.pick)="select xloc from imbat where xitem='"+xitem+"' and ~
+              xitemext='"+xitemext+"' and xbatch='"+xbatch+"' and xwh='"+xwh+"'"
+              set globals(xloc)=xfloc
+
+            end if
+            call imcutconfig
+            
+							str header="Details for <font color=green>"+xstatustor+"</font> "+mode+" Order "+~
+							"<a href='"+#report(imtor.rpt)+"&promptonrefresh=y&prompt0="+#id+"&prompt1="+xtornum+"&prompt2="+xtornum+"' target='_new'>"+xtornum+"</a> "
+            
+            if mode .eq. "Issue"
+            end if
+
+            
+            set xfwh=imtor.xfwh(xtornum)
+            if xfwh .ne. "" .and. xrowtor > 0
+              set xwh=xfwh
+              set xloc=xfloc
+              str sql="select count(*) from imbatv where xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xwh+"' and xbatch='"+xbatch+"' and xloc='"+xloc+"'"
+              //print sql
+              int batchcount=#sql(int,"select count(*) from imbatv where xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xwh+"' and xbatch='"+xbatch+"' and xloc='"+xloc+"'")
+              if batchcount == 0
+                print  "<span class=br>Batch Not Found -- Correct Batch</span>"
+              end if
+              
+              
+            end if
+
+
+            str serstat=#sql(varchar,"select imserstat("+#id+",'Transfer Order','"+xtornum+"',"+xrowtor+")")
+            
+            //print "serstat="+serstat
+            if serstat .ne. ""
+              print "<span class=br>Serial Number Mismatch in this Row</span>"
+            end if
+            
+            set globals(qselect)=" xqty > 0 "
+            if mode .eq. "Receipt"
+              set globals(qselect)=""
+            end if
+//print "field8="+#fields(xval.visibility)      
+            
+            call imvalue
+            
+//print "field81="+#fields(xval.visibility)      
+
+
+						if #checkstatus(statustor,"E")
+             set #field(Release.display)="disable"
+             set #field(Confirm.display)="disable"
+             set #field(Pick.display)="disable"
+             set #field(OneClick.display)="disable"
+						
+						elseif #checkstatus(statustor,"C")
+             set #field(Release.display)="disable"
+             set #field(Confirm.display)="disable"
+             set #field(OneClick.display)="disable"
+             set #field(Pick.display)="disable"
+						elseif #checkstatus(statustor,"Partial")  
+             set #field(Confirm.display)="disable"
+						elseif #checkstatus(statustor,"R") .or. #checkstatus(statustor,"P") 
+             set #field(Release.display)="disable"
+             set #field(Pick.display)="disable"
+						else
+             set #field(Confirm.display)="disable"
+						end if
+
+
+
+            if mode .eq. "Receipt"
+              set #fields(Pick.visibility)="hide"
+            else
+              set #fields(Release.visibility)="hide"
+            end if
+//print "field9="+#fields(xval.visibility)      
+          if xrowtor > 0
+            set #forms(details.default)="Update"
+          else
+            set #forms(details.default)="Add"
+          end if
+          call imcutchecktor 
+          
+          str cutpcs=caitem.xcutpcs(xitem)
+          //print "cutpcs="+cutpcs
+          if cutpcs .eq. "1"
+            set #fields(xbatch.picklist)="list imcutrecbatch"
+          else
+            set #fields(xbatch.picklist)="list imbatloc"
+          end if
+          
+          //print "p:"+#fields(xbatch.picklist)
+       end config
+		 
+		 end valid
+
+     form details
+        caption "Details"
+		 		focus xitem
+        valid validdet
+        table imtdt
+        order xtornum,xrowtor
+        fixed xtornum
+        
+        layout 4
+        objects GetBin,Clear,Show,OneClick Process,Release, Pick,Confirm,Add, Update, Delete, Top, Previous, Next, Bottom,Fixed Asset,~//SerialNumbers,~
+        Open,xsize width(7) attrib(command;local),Cut-pieces,cutmode attrib(hide),~
+        xrowtor attrib(row 0 10;search),xitem attrib(search;submit),xqty,xdesc display(const) attrib(local),xitemext display(composite sep) ,~
+          ~//*block 1 notag,~
+          xbatch display(composite sepbatch) attrib(attach) columns(3),xonefield,xval width(15),~
+          ~//*end block,~
+        xqtyalt,xqtyalc ~
+					display(constant),~
+          xfloc diaplay(combo),xtloc,~
+          xdatearr caption(Date of Arrival),~
+          *block1 3 notag,~
+          xnotebatf,xnotebatt,~
+          xnote attrib(hide),~
+          *end block,~
+          *block 1 notag,~
+          xrem display(area) width(80) height(2),~
+          *end block
+          
+
+        embed onsubmit="submitit(this)"
+		
+		field Fixed Asset
+			embed onclick="clicked(this)"
+		end field
+
+    field xqty
+          embed " onfocus='select();'  "
+      //attrib submit
+      //embed onblur="submitCommand('dummy','details');"
+    end field    
+    field xonefield
+      //columns 10
+      
+      pick "One Field?"
+      embed onclick="javascript:autoSubmit('dummy',this,'one');"
+      attrib local
+      caption <table ><tr><td align=left>Show as One Field?</td></tr></table>
+      display checkbox
+      storage varchar
+      event before
+        //if command .ne. "dummy"
+        //  set xonefield=globals(xonefield)
+        //end if
+      end event
+      event after
+        //set globals(xonefield)=xonefield
+      end event
+    end field
+        
+        
+        
+        field xnotebatf inherits(xnote)
+          attrib local
+          display const
+          //caption Notes from Batch
+          event after
+            call getnotebat            
+          end event
+        end field 
+        field xnotebatt inherits(xnote)
+          attrib local
+          display const
+          //caption Notes from Batch
+        end field 
+          
+
+
+        field GetBin
+          visibility hide
+          event before
+            //print "working"
+            //set #fields(xfloc.display)="combo"
+            call getbin
+          end event
+        end field
+
+
+        field xqty
+          attrib suffix caitem.xunitstk(xitem) 
+        end field
+        field xbatch
+          attrib submit GetBin
+          //pick list imbatloc
+          //second list imcutrecbatch
+        
+        end field
+        
+        
+        #include imcutaction.include
+        
+        
+     end form
+
+
+
+     method getnotebat
+            set xfwh=imtor.xfwh(xtornum)
+            set xtwh=imtor.xtwh(xtornum)
+            //print "xtwh="+xtwh
+            if xfwh .eq. ""
+              set #fields(xnotebatf.visibility)="hidden"
+            else
+              str cap="Notes"
+              if xfloc .ne. ""
+                set cap=cap+" on "+xfloc
+              end if
+              set #fields(xnotebatf.caption)=cap
+
+              set xnotebatf=imnote.xnote(" xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xfwh+"' and xbatch='"+xbatch+"' and xloc='"+xfloc+"'")
+              if xnotebatf .eq. ""
+                set xnotebatf="Notes"
+              end if
+              set xnotebatf="<a href='portal?page=imnote&command=Show&xitem="+xitem+"&xitemext="+xitemext+"&xbatch="+xbatch+"&xwh="+xfwh+"&xloc="+xfloc+"&embeddedpage=2' target='New'>"+xnotebatf+"</a>"
+            end if
+
+            if xtwh .eq. ""
+              set #fields(xnotebatt.visibility)="hidden"
+            else
+              str cap="Notes"
+              if xtloc .ne. ""
+                set cap=cap+" on "+xtloc
+              end if
+
+              set #fields(xnotebatt.caption)=cap
+              set xnotebatt=imnote.xnote(" xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xtwh+"' and xbatch='"+xbatch+"' and xloc='"+xtloc+"'")
+              if xnotebatt .eq. ""
+                set xnotebatt="Notes"
+              end if
+              set xnotebatt="<a href='portal?page=imnote&command=Show&xitem="+xitem+"&xitemext="+xitemext+"&xbatch="+xbatch+"&xwh="+xtwh+"&xloc="+xtloc+"&embeddedpage=2' target='New'>"+xnotebatt+"</a>"
+            end if
+            
+    end method
+    
+    method batchconfig
+
+            set xtwh=imtor.xtwh(xtornum)
+            set xfwh=imtor.xfwh(xtornum)
+            if xtwh .eq. ""
+              set mode="Issue"
+            elseif xfwh .eq. ""
+              set mode="Receipt"
+            else
+              set mode="Transfer"
+            end if
+            
+          if mode .eq. "Issue" .or. mode .eq. "Transfer" 
+            set #fields(xbatch.display)="text"
+            set #fields(xonefield.visibility)="hide"
+//print "V#fields(xonefield.visibility)="+#fields(xonefield.visibility)           
+          elseif xonefield .eq. "1"
+            set #fields(xbatch.display)="text"
+          else
+            str temp=cadef.xbatchformat()
+            if temp .ne. ""
+              set #fields(xbatch.display)=temp
+            else
+              set #fields(xbatch.display)="text"
+              set #fields(xonefield.visibility)="hide"
+            end if
+            set xfloc=''
+            set #fields(xfloc.display)="hide"
+          
+          end if
+          if mode .eq. "Issue"
+              set xtloc=''
+              set #fields(xtloc.display)="hide"
+          elseif mode .eq. "Receipt"
+              set xfloc=''
+              set #fields(xfloc.display)="hide"
+			  
+          end if
+
+    
+    end method
+    method getbin
+              
+              set xdatearr=#sql(varchar,"select xdatearr from imtdt where 'Transfer Order'||'|'||xtornum||'|'||cast(xrowtor as varchar)='"+rectrn+"'")
+              if xdatearr .eq. ""
+                set xdatearr=#max
+              end if
+      //print "xdatearr="+xdatearr
+
+            if caitem.xcutpcs .eq. "1"
+              set #fields(xfloc.pick)="select xloc from imcutrec where xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xwh+"' and xbatch='"+xbatch+"' "
+              set xfloc=imcutrec.xloc(" xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xwh+"' and xbatch='"+xbatch+"' ")
+            else
+              set #fields(xfloc.pick)="select xloc from imbatv where xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xwh+"' and xbatch='"+xbatch+"' "
+              set xfloc=imbatv.xloc(" xitem='"+xitem+"' and xitemext='"+xitemext+"' and xwh='"+xwh+"' and xbatch='"+xbatch+"' ")
+            end if
+            //print "xfloc="+xfloc
+    
+    end method
+    
+    
+     
+     
+     script imtdtscript
+
+        <script language="javascript" type="text/javascript">
+        var button
+        function clicked(b){
+
+          button=b.value
+        }
+        function submitit(form){
+        //alert('hello');
+          #include imcutscript.include  
+			if (button=="Fixed Asset"){
+            form.page.value = "fatemptrn"
+            form.searchbutton.value = "Top" 
+          }
+        }
+
+        </script>
+     end script
+    
+    
+
