@@ -1,0 +1,89 @@
+ method fatogldep
+		//print "to gl called"
+		// int temp=#sql(int,"delete from glaudit where xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher+"'")
+     //print ""+temp+" Audit records for document "+xvoucher+" Deleted"
+     int err=0
+     //dprint xcode+"*"+#result+"*"
+		 buffer glaudit
+		 set glaudit.xdoctype="Fixed Asset Transaction"
+		 set glaudit.xdocnum=xvoucher
+		 set glaudit.xdocrow=0
+		 set glaudit.xcur=#cur
+		 set glaudit.xexch=xexch
+		 //print "inside mthod"+temp
+        set xwh=""
+        set xgcsa=""
+        set xgitem=xastcatg
+        set glaudit.xdiv=xdiv
+        set glaudit.xsec=xsec
+        set glaudit.xproj=xproj
+
+        set xtypegli="Depreciation Expenses"	
+		//set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	set glaudit.xlineamt=xprime
+      	set glaudit.xtypegli=xtypegli
+      	insert glaudit
+		
+      	set xtypegli="Accumulated Depreciation"	
+		set xgitem = xastcatg
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	comp glaudit.xlineamt=0.0 - xprime
+      	set glaudit.xtypegli=xtypegli
+      	insert glaudit
+     
+  //print "xacc="+xacc
+  //print "#result="+#result
+	if #result .eq. "false"
+	  set err=1
+    print "Error in "+xcode 
+	end if
+	str sysnot=imdef.xsysnot()
+    if sysnot .ne. "1"
+      set curdate=#date
+    elseif xdate .eq. #maxdate
+      set curdate=#date
+    else
+      set curdate=xdate
+    end if
+	set doctype="Fixed Asset Transaction"
+	set docnum=xvoucher
+	//dprint "#result="+#result+" err="+err
+  //console "#result="+#result+" err="+err
+
+	if err == 1 
+		//rollback
+	
+	else
+		set trn=""
+    //print "date="+xdate
+		//print "xyear="+xyear+"/xper="+xper
+    int yr=xyear
+    int mth=xper+#gloffset
+    if mth > 12
+      set yr=yr+1
+      set mth=mth-12
+    end if
+    set firstday=yr+"-"+#padl(mth,2,"0")+"-01"
+    str sql="select lastday('"+firstday+"')"
+		//dprint sql
+		str lastday=#sql(str,sql)
+    set date=curdate
+		//dprint "firstday="+firstday
+		//dprint "lastday="+lastday
+    print "date="+date
+    //print "doctype="+doctype
+    set xvoucher=""
+    call glvoucher	
+		if err == 1 .or. #result .eq. "false"
+			//rollback
+		//print "Rolling Back ..."
+		else
+	    //set temp=#sql(string,"update imtor set xdatecom='"+curdate+"' where xtornum='"+xtornum+"'")
+			//commit
+		//print "Commiting ..."
+		end if
+    
+	end if
