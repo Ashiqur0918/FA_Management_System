@@ -1,0 +1,65 @@
+ method fatogl
+		
+		 int temp=#sql(int,"delete from glaudit where xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher+"'")
+		 buffer glaudit
+		 set glaudit.xdoctype="Fixed Asset Transaction"
+		 set glaudit.xdocnum=xvoucher
+		 set glaudit.xdocrow=0
+		 set glaudit.xcur=#cur
+		 set glaudit.xexch=xexch
+		 //print "inside mthod"+temp
+        set xtwh=""
+        set glaudit.xdiv=xdiv
+        set glaudit.xsec=xsec
+        set glaudit.xproj=xproj
+
+        set typegli="Asset Acquisition"	
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	set glaudit.xlineamt=xprime
+      	set glaudit.xtypegli=typegli
+      	insert glaudit
+		
+      	set typegli="Inventory"	
+		call cagli		
+      	set glaudit.xacc=xacc      	
+      	comp glaudit.xlineamt=0.0 - xprime
+      	set glaudit.xtypegli=typegli
+      	insert glaudit
+     
+
+	if #result .eq. "false"
+	  set err=1
+	end if
+	str sysnot=imdef.xsysnot()
+    if sysnot .ne. "1"
+      set curdate=#date
+    elseif xdatecom .eq. #maxdate
+      set curdate=#date
+    else
+      set curdate=xdate
+    end if
+	set doctype="Fixed Asset Transaction"
+	set docnum=xvoucher
+//print "#result="+#result+" err="+err
+  //console "#result="+#result+" err="+err
+
+	if err == 1 
+		//rollback
+	
+	else
+		set trn=""
+    //print "date="+xdatecom
+		if date .eq. ""
+      set date=xdate
+    end if
+    call glvoucher	
+		if err == 1 .or. #result .eq. "false"
+			//rollback
+		//print "Rolling Back ..."
+		else
+	    //set temp=#sql(string,"update imtor set xdatecom='"+curdate+"' where xtornum='"+xtornum+"'")
+			//commit
+		//print "Commiting ..."
+		end if
+	end if
