@@ -1,0 +1,54 @@
+page caglifa
+     caption "GL Interface Table"
+     //sidebar list gli,text html
+     sections form gli,list gli
+
+
+     form gli
+       caption "GL Interface Table"
+        table cagli
+        order xtypegli,xgitem,xgcsa,xwh
+        //select
+        
+        layout -5
+        objects Show, Clear,Add,Update, Delete,Top, Previous, Next, Bottom,~
+            xtypegli,xgitem,xgcsa,xwh,xacc
+         field xwh
+            attrib -mandatory
+            default ""
+         end field
+		 field xgitem
+				caption Asset Category
+				pick "select xcode from xcodes where xtype='FA Category'"
+			end field
+
+
+        //embed onsubmit="submitit(this)"
+
+     end form
+
+     list gli
+       caption "GL Interface Table"
+        table cagli
+        order xtypegli,xgitem,xgcsa,xwh
+        navigators alpha
+        rows 50
+        objects xtypegli attrib(link #servlet+"?page=caglifa&command=Show&xtypegli=?&xgitem=?&xgcsa=?&xwh=?"), ~
+                xgitem,xgcsa,xwh,xacc
+
+			field xgitem
+				caption Asset Category
+				pick "select xcode from xcodes where xtype='FA Category'"
+			end field
+			//field xgcsa
+			//	caption 
+			//end field
+			
+
+        //totals "","Totals","","","","",sum,sum
+
+        //headers none
+     end list
+
+
+end page
