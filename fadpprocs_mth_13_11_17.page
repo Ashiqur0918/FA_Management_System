@@ -1,0 +1,638 @@
+page fadpprocs_mth		 
+   
+	caption "Monthly Depreciation Process SL/RB"
+    sections  form one, method chk_access,~
+   		method dep_sl, method dep_rb
+    
+		list one
+      table facode
+      order xcode
+      rows 10
+      objects  xtype,xcode attrib(link #servlet+"?page=facode&command=Show&xtype=?&xcode=?"),xdesc
+    end list
+  valid validone
+    config
+      set xitemold=""
+      set xitem="z"
+      set xdate=#date
+      set xyesno="Yes"
+      //str sql="select count (*) from  glheader  where xdoctype ilike 'Fixed%' and xdocnum ilike 'DEP%' and xyear="+xyear+" and xper="+xper
+      set myxper=xper-1
+	  if myxper .eq. "0"
+		set myxyearzn=xyear-1
+		set myxper=12
+	  else
+		set myxyearzn=xyear
+	  end if
+	 // print myxper+" "+myxyearzn
+	  str sql897="select count (*) from  fatrn  where zid='"+#id+"' and xaction ilike 'Depr%' and xyear="+myxyearzn+" and xper="+myxper
+      //print sql897
+      int k=#sql(int,sql897)
+		if k .eq. 0
+						//set #fields(Undo.visibility)="disable"
+						set #fields(Process.visibility)="disable"
+						
+		end if
+	  
+	  
+	  str sql="select count (*) from  fatrn  where zid='"+#id+"' and xaction ilike 'Depr%' and xyear="+xyear+" and xper="+xper
+      //print sql
+      int i=#sql(int,sql)
+      //print i
+      if i > 0
+        set #fields(Process.visibility)="disable"
+		str sql54="select count (*) from  fatrn  where xaction ilike 'Depr%' and xyear>="+xyear+" and xper>"+xper
+					//print sql54
+					int j=#sql(int,sql54)
+					
+					if j > 0
+						set #fields(Undo.visibility)="disable"
+						
+					end if
+      else
+        str sql="select count(*) from glaudit d where zid='"+#id+"' and xdoctype ilike 'Fixed%' and exists(select * from fatrn f where f.zid=d.zid and f.xvoucher=d.xdocnum and f.xaction ilike 'Depr%' and  f.xyear="+xyear+" and f.xper="+xper+")"
+				int i=#sql(int,sql)
+				//print "i=glaudit="+i
+				if i > 0
+					set #fields(Process.visibility)="disable"
+					str sql54="select count(*) from glaudit d where zid='"+#id+"' and xdoctype ilike 'Fixed%' and exists(select * from fatrn f where f.zid=d.zid and f.xvoucher=d.xdocnum and f.xaction ilike 'Depr%' and  f.xyear>="+xyear+" and f.xper>"+xper+")"
+					print sql54
+					int j=#sql(int,sql54)
+					
+					if j > 0
+						set #fields(Undo.visibility)="disable"
+						
+					end if
+				else
+					set #fields(Undo.visibility)="disable"
+				end if
+		
+      end if
+    end config
+  
+  end valid
+	form one
+    valid validone
+      table
+      order
+      layout 3     
+      objects Refresh,Process,Clear,Undo,~
+              xyear ,xper ,xyesno caption(GL Transfer) visibility(hide),xitemold visibility(hide),xitem visibility(hide),xdate visibility(hide)
+		
+		
+		field Undo
+      event before
+        str sql="delete from gldetail d where zid='"+#id+"' and exists(select * from glheader h where h.zid=d.zid and h.xvoucher=d.xvoucher and xdoctype ilike 'Fixed%' and xdocnum ilike 'DEP%' and xyear="+xyear+" and xper="+xper+")"
+        //print sql
+        int i=#sql(int,sql)
+        print ""+i+" details deleted"
+        str sql="delete from fatrn f where zid='"+#id+"' and exists(select * from glheader h, glaudit a where h.zid=a.zid and h.xvoucher=a.xvoucher and h.zid=f.zid and h.xdocnum=f.xvoucher and h.xdoctype ilike 'Fixed%' and h.xdocnum ilike 'DEP%' and xyear="+xyear+" and xper="+xper+")"
+        //print sql
+        int i=#sql(int,sql)
+        print ""+i+" transactions deleted"
+        str sql="delete from glaudit d where zid='"+#id+"' and exists(select * from glheader h where h.zid=d.zid and h.xvoucher=d.xvoucher and xdoctype ilike 'Fixed%' and xdocnum ilike 'DEP%' and xyear="+xyear+" and xper="+xper+")"
+        //print sql
+        int i=#sql(int,sql)
+        print ""+i+" audit records deleted"
+        str sql="delete from glaudit d where zid='"+#id+"' and xdoctype ilike 'Fixed%' and exists(select * from fatrn f where f.zid=d.zid and f.xvoucher=d.xdocnum and f.xaction ilike 'Depr%' and  f.xyear="+xyear+" and f.xper="+xper+")"
+        //print sql
+        int i=#sql(int,sql)
+        print ""+i+" blank audit records deleted"
+        str sql="delete from  glheader where zid='"+#id+"' and xdoctype ilike 'Fixed%' and xdocnum ilike 'DEP%' and xyear="+xyear+" and xper="+xper
+        //print sql
+        int i=#sql(int,sql)
+        print ""+i+" headers deleted"
+        str sql="delete from  fatrn  where zid='"+#id+"' and xaction ilike 'Depr%' and xyear="+xyear+" and xper="+xper
+        //print sql
+        int i=#sql(int,sql)
+        print ""+i+" FA Transactions deleted"
+        
+      end event
+    end field
+    field xitemold
+			caption From Asset Code
+			pick list famst2
+		end field
+		
+		field xitem
+			caption To Asset Code
+			pick list famst1
+			//default "zzz"
+		end field
+		
+		field xdate
+		//caption '2013-01-20'
+		caption Process Date
+		default #d
+		//display const
+		end field
+		
+
+		field process
+			event before
+				
+				set globals(ErrChk) = ""
+				set globals(PurMsg) = ""
+				set globals(AcqMsg) = ""
+				set globals(DepCom) = ""
+				set globals(Estlife) = ""
+				set globals(Slvval) = ""
+				set globals(PriMsg) = ""
+				set globals(PostMsg) = ""
+				str lastdate = ""
+				//set xitemold = "0"
+				//set xitem = "z"
+				//error globals(Estlife)
+				
+				if globals(ErrChk) .ne. "1"			
+					if xyear<=0 .or. xper<=0
+						set globals(ErrChk)="1"
+						error "Wrong Year/Per"
+					end if
+				end if
+				
+				if globals(ErrChk) .ne. "1"
+        //*****
+		      str sql="select xcode from famst where zid='"+#id+"' and xassetstat='In Use' order by xcode"
+         // print sql
+					int i_count=#sqlfill(sql)
+          int i_code=0
+          //print i_count
+          
+          
+          while i_code < i_count
+						array get(i_code,"xcode")
+            set i_code=i_code+1
+            //dprint "*"+xcode
+            set xastname = #sql("select xastname from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+						
+						set extdata = 0+#sql("select count(xvoucher) from fatrn where zid='"+#id+"' and xyear='"+xyear+"' and xper='"+xper+"' and xcode='"+xcode+"' and xaction like 'Depr%'")
+
+						str mysql = "delete from fatrn where zid='"+#id+"' and xyear='"+xyear+"' and xper='"+xper+"' and xcode='"+xcode+"' and xaction like 'Depr%' ~
+									and not exists(select * from glheader where zid=fatrn.zid and xdocnum=fatrn.xvoucher)"
+						set tmpstr = #sql(str,mysql)
+						
+						set xdepmeth = #sql("select xdepmeth from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+						//print xcode+" "+xdepmeth
+						if tmpstr>0 .or. extdata <1
+							if xdepmeth .sw. "SL"
+								call dep_sl
+								//print xcode+" "+xdepmeth
+							else
+								call dep_rb
+							end if	
+						end if
+					end while
+        
+				end if
+				if globals(PurMsg) .ne. ""
+					print "<font color=red size=3> "+globals(PurMsg)+"</p>Purchased after "+xyear+"("+xper+")"
+				end if
+				if globals(AcqMsg) .ne. ""
+					print "<font color=red size=3> "+globals(AcqMsg)+"</p>Acquisition after "+xyear+"("+xper+")"
+				end if
+				if globals(DepCom) .ne. ""
+					print "<font color=red size=3> Depriciation already completed for</p>"+globals(DepCom)
+				end if
+				if globals(Estlife) .ne. ""
+					print "<font color=red size=3> Estimated Life not found for</p>"+globals(Estlife)
+				end if
+				if globals(Slvval) .ne. ""
+					print "<font color=red size=3> Salvage value not found for</p>"+globals(Slvval)
+				end if				
+				if globals(PostMsg) .ne. ""
+					print "<font color=red size=3> Acquisition not yet posted for</p>"+globals(PostMsg)
+				end if
+				if globals(PriMsg) .ne. ""
+					print "<font color=blue size=3> Depreciation for "+xyear+"("+xper+") completed for</p>"+globals(PriMsg)
+				end if
+			end event
+		end field
+
+	end form
+	
+	method insert
+				buffer fatrn=famst(xcode)
+				set fatrn.xvoucher=vouchernum
+				//set fatrn.xdate=xdate
+				set mymonth=xper+3
+				set fatrn.xdate=xyear+"-"+mymonth+"-10"
+				set fatrn.xyear=xyear
+				set fatrn.xper=xper
+				set fatrn.xastname=xastname
+				set fatrn.xprime=0.0+dep_amt
+				set fatrn.xbase=0.0+dep_amt
+				set fatrn.xpornum=xpornum
+				set fatrn.xpurdate=xpurdate
+				set fatrn.xaction=xaction
+				set fatrn.xtrnfa=tmp
+				set fatrn.xtag=xtag
+				
+				insert fatrn		 
+	end method 
+
+		method faglentryzn
+					//print "to gl called"
+					// int temp=#sql(int,"delete from glaudit where xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher+"'")
+				 //print ""+temp+" Audit records for document "+xvoucher+" Deleted"
+				 int err=0
+				 //dprint xcode+"*"+#result+"*"
+					 buffer glaudit
+					 set glaudit.xdoctype="Fixed Asset Transaction"
+					 set glaudit.xdocnum=xvoucher
+					 set glaudit.xdocrow=0
+					 set glaudit.xcur=#cur
+					 set glaudit.xexch=xexch
+					 //print "inside mthod"+temp
+					set xwh=""
+					set xgcsa=""
+					set xgitem=xastcatg
+					set glaudit.xdiv=xdiv
+					set glaudit.xsec=xsec
+					set glaudit.xproj=xproj
+
+					set xtypegli="Depreciation Expenses"	
+					//set xgitem = xastcatg
+					call cagli		
+					set glaudit.xacc=xacc      	
+					comp glaudit.xlineamt=0.0+xprime
+					set glaudit.xtypegli=xtypegli
+					insert glaudit
+					
+					set xtypegli="Accumulated Depreciation"	
+					set xgitem = xastcatg
+					call cagli		
+					set glaudit.xacc=xacc      	
+					comp glaudit.xlineamt=0.0 - xprime
+					set glaudit.xtypegli=xtypegli
+					insert glaudit
+				 
+			  //print "xacc="+xacc
+			  //print "#result="+#result
+				if #result .eq. "false"
+				  set err=1
+				print "Error in "+xcode 
+				end if
+				str sysnot=imdef.xsysnot()
+				//if sysnot .ne. "1"
+				//  set curdate=#date
+				//elseif xdate .eq. #maxdate
+				//  set curdate=#date
+				//else
+				//  set curdate=xdate
+				//end if
+				set curdate=xyear+"-"+mymonth+"-10"
+				set doctype="Fixed Asset Transaction"
+				set docnum=xvoucher
+				//dprint "#result="+#result+" err="+err
+			  //console "#result="+#result+" err="+err
+
+				if err == 1 
+					//rollback
+				
+				else
+					set trn=""
+				//print "date="+xdate
+					//print "xyear="+xyear+"/xper="+xper
+				int yr=xyear
+				int mth=xper+#gloffset
+				if mth > 12
+				  set yr=yr+1
+				  set mth=mth-12
+				end if
+				set firstday=yr+"-"+#padl(mth,2,"0")+"-01"
+				str sql="select lastday('"+firstday+"')"
+					//dprint sql
+					str lastday=#sql(str,sql)
+				set date=curdate
+					//dprint "firstday="+firstday
+					//dprint "lastday="+lastday
+				print "date="+date
+				//print "doctype="+doctype
+				set xvoucher=""
+				call glvoucher	
+					if err == 1 .or. #result .eq. "false"
+						//rollback
+					//print "Rolling Back ..."
+					else
+					//set temp=#sql(string,"update imtor set xdatecom='"+curdate+"' where zid='"+#id+"' and xtornum='"+xtornum+"'")
+						//commit
+					//print "Commiting ..."
+					end if
+				
+				end if
+						 
+		end method
+	
+    method dep_sl
+     	set globals(ErrFree) = ""
+     	
+     	set xestlife = #sql(decimal,"select xestlife from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     	set xslvval = #sql(decimal,"select xslvval from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     	set totdep = #sql(decimal,"select count(xvoucher) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction like 'Dep%'")
+		set totdepextra = #sql(decimal,"select count(xvoucher) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xyear='2016' and xper='12' and xaction like 'Dep%'")
+     	if xestlife <= 0
+     		set globals(ErrFree)="1"
+     		set globals(Estlife)=xcode+", "+globals(Estlife)
+     	end if
+     	if globals(ErrFree) .ne. "1"
+     		if xslvval <= 0
+     			//set globals(ErrFree)="1"
+     			//set globals(Slvval)=xcode+", "+globals(Slvval)  
+     		end if
+     	end if
+     	if globals(ErrFree) .ne. "1"
+     		if xestlife == totdep
+     			set globals(ErrFree)="1"
+     			set globals(DepCom)=xcode+", "+globals(DepCom)
+     		end if
+     	end if
+     	if globals(ErrFree) .ne. "1"			
+     		//po date - xpurdate
+			set xpurdate=famst.xpurdate(xcode) //#sql("select xpurdate from famst where xcode='"+xcode+"'")
+			//print "xpurdate="+xpurdate
+			str temp=#dream(YearPer xpurdate)
+			set pur_year=#dream(YearPer.year)
+			set pur_per=#dream(YearPer.per)
+			//print "yp:"+pur_year+"/"+pur_per
+				
+			//set pur_year = #sql("select xyear from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     		//set pur_per = #sql("select xper from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+			//print pur_per+" from query"			
+			set pur_per = #padl(pur_per,2,"0") 
+			
+     		set pur_yrpr = pur_year+pur_per
+			str curyear = xyear
+			str curper = #padl(xper,2,"0") 
+     		str cur_yrpr = curyear+curper
+			
+     		if cur_yrpr < pur_yrpr
+				print "Current year per: "+cur_yrpr+" Purchase year per: "+pur_yrpr        
+				//print "inside if"
+     			set globals(ErrFree)="1"
+     			set globals(PurMsg)=xcode+", "+globals(PurMsg)
+     		end if
+		end if
+		if globals(ErrFree) .ne. "1"			
+			str curyear = xyear
+			str curper = #padl(xper,2,"0") 
+     		str cur_yrpr = curyear+curper
+     		
+			set acq_year=famst.xyear(xcode)
+			set acq_per=famst.xper(xcode)			
+			set acq_per = #padl(acq_per,2,"0")			
+     		set acq_yrpr = acq_year+acq_per
+		
+			if cur_yrpr < acq_yrpr
+				print "Current year per: "+cur_yrpr+" Acquisition year per: "+acq_yrpr				
+     			set globals(ErrFree)="1"
+     			set globals(AcqMsg)=xcode+", "+globals(AcqMsg)
+     		end if
+     	end if
+		if globals(ErrFree) .ne. "1"		
+			set glvoucherno = #sql(str,"select xvoucher from glheader where zid='"+#id+"' and xdocnum='"+famst.xvoucher(xcode)+"'")
+			//print "glvoucherno "+glvoucherno			
+			if glvoucherno .eq. ""
+				set globals(ErrFree)="1"
+     			set globals(PostMsg)=xcode+", "+globals(PostMsg)
+     		end if
+     	end if
+				
+     	if globals(ErrFree) .eq. ""
+     		decimal temp = 0.0
+     		decimal dep_amt = 0.0
+     		set base_amt = #sql(decimal,"select xbase from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     		set add_amt = #sql(decimal,"select sum(xbase) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction like 'Add%' and xdate<='"+xdate+"'") 
+     		set tot_dep = #sql(decimal,"select sum(xbase) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction like 'Dep%' and xdate<='"+xdate+"'") 
+     		set asset_val = 0.0+base_amt+add_amt
+     		set act_val = 0.0+asset_val-tot_dep
+			
+
+     		//set temp=0.0+asset_val-xslvval
+			
+			set temp=0.0+asset_val-xslvval-tot_dep
+     		set templife=0.0+xestlife-totdep+totdepextra
+     		set dep_amt=0.0+temp/templife
+     		if act_val > dep_amt
+     		else
+     			set dep_amt = 0.0+act_val
+     		end if
+     		print xcode+" "+dep_amt+" "+add_amt+" "+templife+" "+tot_dep+" "
+     		//Amount – Salvage Value/Estimated Life=Depreciation  per month
+     		
+ 			
+     		buffer famst
+				move famst=famst(xcode)
+ 			
+				if #result .eq. "true" .and. dep_amt > 0.0 .and. act_val > 0.0
+	     		
+					//set tmp = "DE--"
+					set tmp = #sql( "select xtrn from xtrn where zid='"+#id+"' and xtypetrn='Fixed Asset Transaction' and xaction ilike 'Depr%'")
+					set xaction = #sql("select xaction from xtrn where zid='"+#id+"' and xtypetrn='Fixed Asset Transaction' and xtrn='"+tmp+"'")
+					set mysql = "select xvoucher from fatrn where zid='"+#id+"' and xvoucher like '"+tmp+"%' order by xvoucher desc"
+					set vouchernum = #sql(mysql)
+				
+					//print vouchernum+" last voucher"+mysql
+					if #result .eq. "true" .and. vouchernum .ne. ""
+						set last_num = 0+#sub(vouchernum,4,10)
+					end if
+					set last_num = 1+last_num
+					set vouchernum = #padl(""+last_num,6,"0") 
+					set vouchernum=tmp+vouchernum
+					//print vouchernum+" fatrnnum"
+					call insert
+					//if xyesno .eq. "Yes"
+					set xvoucher = vouchernum
+					set xtrnfa = tmp
+					set xdiv = famst.xdiv
+					set xsec = famst.xsec
+					set xproj = famst.xproj
+					set xastcatg = famst.xastcatg
+					set xprime = 0.0+dep_amt
+					set xexch = famst.xexch
+					//print "calling ......."
+					//call fatogldep
+					call faglentryzn
+					//end if
+				
+					if #result .eq. "true" .and. err == 0
+          
+					end if
+					//print tmpstr+" query: "+myqry
+					if #result .eq. "true"
+						set globals(PriMsg) = xcode+", "+globals(PriMsg)
+					end if
+				end if
+     	end if
+    end method
+	 
+	method dep_rb
+     	set globals(ErrFree) = ""
+     	//print "RB called "+xcode
+     	set xestlife = 0+#sql(decimal,"select xestlife from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+        set xdepfactor = 0.0+#sql(decimal,"select xdepfactor from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     	set xofflife =0.0+ #sql(decimal,"select xoffers from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     	set xslvval = 0.0+#sql(decimal,"select xslvval from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     	set totdep = 0+#sql(decimal,"select count(xvoucher) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction like 'Depr%'")
+         if xofflife >0.0
+            set totdep=0.0+totdep+xofflife-1
+            //print totdep
+            else
+            set totdep=0.0+totdep
+     	end if
+
+         if xdepfactor >0.0
+          //class osbcustom(#calc(xdepfactor,100,"/",5,xdepfactor))
+		  set xdepfactor = 0.0+xdepfactor/100
+     	end if
+
+         if xestlife <= 0
+     		//set globals(ErrFree)="1"
+     		//set globals(Estlife)=xcode+", "+globals(Estlife)
+     	end if
+
+     	if globals(ErrFree) .ne. "1"
+     		if xslvval < 0
+     			set globals(ErrFree)="1"
+     			set globals(Slvval)=xcode+", "+globals(Slvval)
+     		end if
+     	end if
+
+     	if globals(ErrFree) .ne. "1"
+     		if xestlife == totdep
+     			//set globals(ErrFree)="1"
+     			//set globals(DepCom)=xcode+", "+globals(DepCom)
+     		end if
+     	end if
+
+     	if globals(ErrFree) .ne. "1"
+     		if xdepfactor <=0.0
+     			set globals(ErrFree)="1"
+     			set globals(DepRate)=xcode+", "+globals(DepRate)
+     		end if
+     	end if
+		
+		if globals(ErrFree) .ne. "1"			
+     		//po date - xpurdate
+			set xpurdate=famst.xpurdate(xcode) //#sql("select xpurdate from famst where xcode='"+xcode+"'")
+			//print "xpurdate="+xpurdate
+			str temp=#dream(YearPer xpurdate)
+			set pur_year=#dream(YearPer.year)
+			set pur_per=#dream(YearPer.per)
+			//print "yp:"+pur_year+"/"+pur_per
+				
+			//set pur_year = #sql("select xyear from famst where xcode='"+xcode+"'")
+     		//set pur_per = #sql("select xper from famst where xcode='"+xcode+"'")
+			//print pur_per+" from query"			
+			set pur_per = #padl(pur_per,2,"0") 
+			
+     		set pur_yrpr = pur_year+pur_per
+			str curyear = xyear
+			str curper = #padl(xper,2,"0") 
+     		str cur_yrpr = curyear+curper
+			
+     		if cur_yrpr < pur_yrpr
+				print "Current year per: "+cur_yrpr+" Purchase year per: "+pur_yrpr        
+				//print "inside if"
+     			set globals(ErrFree)="1"
+     			set globals(PurMsg)=xcode+", "+globals(PurMsg)
+     		end if
+		end if
+		if globals(ErrFree) .ne. "1"			
+			str curyear = xyear
+			str curper = #padl(xper,2,"0") 
+     		str cur_yrpr = curyear+curper
+     		
+			set acq_year=famst.xyear(xcode)
+			set acq_per=famst.xper(xcode)			
+			set acq_per = #padl(acq_per,2,"0")			
+     		set acq_yrpr = acq_year+acq_per
+		
+			if cur_yrpr < acq_yrpr
+				print "Current year per: "+cur_yrpr+" Acquisition year per: "+acq_yrpr				
+     			set globals(ErrFree)="1"
+     			set globals(AcqMsg)=xcode+", "+globals(AcqMsg)
+     		end if
+     	end if
+		
+		if globals(ErrFree) .ne. "1"		
+			set glvoucherno = #sql(str,"select xvoucher from glheader where zid='"+#id+"' and xdocnum='"+famst.xvoucher(xcode)+"'")
+			//print "glvoucherno "+glvoucherno			
+			if glvoucherno .eq. ""
+				set globals(ErrFree)="1"
+     			set globals(PostMsg)=xcode+", "+globals(PostMsg)
+     		end if
+     	end if
+
+     	if globals(ErrFree) .eq. ""
+     		decimal temp = 0.0
+     		decimal dep_amt = 0.0
+     		decimal desp_amt=0.0
+     		set base_amt = 0.0+#sql(decimal,"select xbase from famst where zid='"+#id+"' and xcode='"+xcode+"'")
+     		set add_amt = 0.0+#sql(decimal,"select sum(xbase) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction like 'Add%' and xdate<='"+xdate+"'")
+     		set desp_amt = 0.0+#sql(decimal,"select sum(xbase) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction like 'Dis%' and xdate<='"+xdate+"'")
+     		set tot_dep = 0.0+#sql(decimal,"select sum(xbase) from fatrn where zid='"+#id+"' and xcode='"+xcode+"' and xaction like 'Dep%'")
+     		set asset_val = 0.0+base_amt+add_amt
+     		set act_val = 0.0+asset_val-tot_dep-desp_amt-xslvval
+
+             
+  
+			set dep_amt = 0.0+act_val*xdepfactor
+			//compute dep_amt = 0.0+act_val*(xdepfactor/100)
+	//error "dep_amt :"+dep_amt
+            if dep_amt >0.0
+
+			 set dep_amt = 0.0+dep_amt/12
+     		end if
+			
+			//print act_val+" actual value "+xdepfactor+depamt
+
+     		if act_val > dep_amt
+     		else
+     			set dep_amt = 0.0+act_val
+     		end if
+     		//print xcode+" "+dep_amt+" "+add_amt+" "+lastdate
+     		//Amount – Salvage Value/Estimated Life=Depreciation  per month
+
+ 			set xcode=xcode
+     		buffer famst
+ 			move famst=famst(xcode)
+ 			//print #result
+
+ 			if #result .eq. "true" .and. dep_amt > 0.0 .and. act_val > 0.0
+	     		//set vouchernum = #trn("Fixed Asset Transaction","DE--")
+				set tmp = #sql( "select xtrn from xtrn where zid='"+#id+"' and xtypetrn='Fixed Asset Transaction' and xaction ilike 'Depr%'")
+				//set tmp = "DE--"
+				set xaction = #sql("select xaction from xtrn where zid='"+#id+"' and xtypetrn='Fixed Asset Transaction' and xtrn='"+tmp+"'")
+				str vouchernum = #sql(str,"select xvoucher from fatrn where zid='"+#id+"' and xvoucher like '"+tmp+"%' order by xvoucher desc")
+				if #result .eq. "true" .and. vouchernum .ne. ""
+					set last_num = 0+#sub(vouchernum,4,10)
+				end if
+				set last_num = 1+last_num
+				set vouchernum = #padl(""+last_num,6,"0") 
+				set vouchernum=tmp+vouchernum
+				//print vouchernum+" fatrnnum"			
+				
+				call insert
+
+				//if xyesno .eq. "Yes"
+					set xvoucher = vouchernum
+					set xtrnfa = tmp
+					set xdiv = famst.xdiv
+					set xsec = famst.xsec
+					set xproj = famst.xproj
+					set xastcatg = famst.xastcatg
+					set xprime = 0.0+dep_amt
+					set xexch = famst.xexch
+					call fatogldep
+				//end if
+				
+				if #result .eq. "true"
+					set globals(PriMsg) = xcode+", "+globals(PriMsg)
+				end if
+			end if
+     	end if
+    end method
+		 
+
+end page
