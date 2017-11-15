@@ -1,0 +1,5 @@
+text cagli
+  "Sales,Discount,Returns,Commission,Purchase Commission,Purchase Discount,Cost of Sales,Cost of Sales Variance,Inventory/Accruals,~
+  Purchase Variance,Accrued Purchases-Suppliers,Accrued Purchases-Sundries,Accrued Purchases-Agents,Work In Progress-RM,Work In Progress-FG,~
+  Asset Acquisition,Addition,Accumulated Depreciation,Depreciation Expenses,Disposal Account,Cash/General Reserves,Gain on Disposal,Taxes/Duties Payable Contra,Receivable on Disposal"
+end text
