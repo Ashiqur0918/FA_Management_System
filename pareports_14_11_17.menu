@@ -1,0 +1,51 @@
+//PA Reports.menu
+caption "Project Accounting" page 2
+//-------------------------------------------------------------------
+option                           |action
+//-------------------------------------------------------------------
+-Ledgers
+
+Monthly Ledger by Project Wise       |#classPath+"/"+#servlet+"?page=*crystal arledbm_prj(~
+                                  p ~
+                                  xacc caption(Control A/c) display(combo) picklist(select xacc from glmst where xaccusage='AR') default(#sql(""select xacc from glmst where xaccusage='AR' order by xacc"")),~
+                                  xcus caption(From Customer) default(#sql(""select min(xcus) from cacus"")),  xcus caption(To Customer) default(#sql(""select max(xcus) from cacus"")),~
+																 xyear caption(Year) default(#glyear),xper caption(Period) default(#glper),xproj caption(Project) display(tcombo) )"
+                                                                                                                       
+
+Monthly Ledger by Project                   |#classPath+"/"+#servlet+"?page=*crystal glledbmprj(xproj=From Project= =tcombo,xproj=To Project=zzz=tcombo,xacc=From Account=0,xacc=To Account=zzz,~
+
+
+
+                                                            xyear=Year=#glyear,xper=Period=#glper)"
+Monthly Ledger by Division                   |#classPath+"/"+#servlet+"?page=*crystal glledbmdiv(xdiv=From Division= =tcombo,xdiv=To Division=zzz=tcombo,xacc=From Account=0,xacc=To Account=zzz,~
+
+
+                                                            xyear=Year=#glyear,xper=Period=#glper)"	
+Monthly Ledger by Section                   |#classPath+"/"+#servlet+"?page=*crystal glledbmsec(xsec=From Section= =tcombo,xsec=To Section=zzz=tcombo,xacc=From Account=0,xacc=To Account=zzz,~
+                                                            xyear=Year=#glyear,xper=Period=#glper)"
+Monthly Ledger by Division,Section & Project                    |#classPath+"/"+#servlet+"?page=*crystal glledbmdevsecprj(xdiv=Division= =tcombo,xsec=Section= =tcombo,~
+
+
+																xproj=Project= =tcombo,xacc=From Account=0,xacc=To Account=zzz,xyear=Year=#glyear,xper=Period=#glper)"															
+Annual Ledger by Project                   |#classPath+"/"+#servlet+"?page=*crystal glledbprj(xproj=From Project= =tcombo,xproj=To Project=zzz=tcombo,xacc=From Account=0,xacc=To Account=zzz,~
+                                                            xyear=Year=#glyear,xper=Period=#glper)"
+Annual Ledger by Division                   |#classPath+"/"+#servlet+"?page=*crystal glledbdiv(xdiv=From Division= =tcombo,xdiv=To Division=zzz=tcombo,xacc=From Account=0,xacc=To Account=zzz,~
+
+                                                            xyear=Year=#glyear,xper=Period=#glper)"	
+Annual Ledger by Section                   |#classPath+"/"+#servlet+"?page=*crystal glledbsec(xsec=From Section= =tcombo,xsec=To Section=zzz=tcombo,xacc=From Account=0,xacc=To Account=zzz,~
+                                                            xyear=Year=#glyear,xper=Period=#glper)"	
+Annual Ledger by Division,Section & Project                    |#classPath+"/"+#servlet+"?page=*crystal glledbdevsecprj(xdiv=Division= =tcombo,xsec=Section= =tcombo,~
+
+																xproj=Project= =tcombo,xacc=From Account=0,xacc=To Account=zzz,xyear=Year=#glyear,xper=Period=#glper)"																
+-Statements
+Profit and Loss by Division      |#classPath+"/"+#servlet+"?page=*crystal papldivb(xyear=Year,xper=Period=,xhrc=Level=3,xdiv=Division=)"
+Profit and Loss by Section       |#classPath+"/"+#servlet+"?page=*crystal paplsecb(xyear=Year=,xper=Period=,xhrc=Level,xsec=Section=)"
+Profit and Loss by Project       |#classPath+"/"+#servlet+"?page=*crystal paplprjb(xyear=Year=,xper=Period=,xhrc=Level,xproj=Project=)"
+Profit and Loss by Project(Details)       |#classPath+"/"+#servlet+"?page=*crystal paplprjdt(xyear=Year=#glyear,xper=Period=#glper,xhrc=Levels=2,xproj=Project)"
+Profit and Loss by Div-Sec-Prj   |#classPath+"/"+#servlet+"?page=*crystal paplb(xyear=Year=,xper=Period=,xhrc=Level,xdiv=Division=,xsec=Section=,xproj=Project=)"
+//Profit and Loss by Division      |#classPath+"/"+#servlet+"?page=*crystal @papldivb(xyear=Year=2001,xper=Period=,xhrc=Level,xdiv=Division=)"
+//Profit and Loss by Section       |#classPath+"/"+#servlet+"?page=*crystal @paplsecb(xyear=Year=2001,xper=Period=,xhrc=Level,xsec=Section=)"
+//Profit and Loss by Project       |#classPath+"/"+#servlet+"?page=*crystal @paplprjb(xyear=Year=2001,xper=Period=,xhrc=Level,xproj=Project=)"
+//Profit and Loss by Div-Sec-Prj   |#classPath+"/"+#servlet+"?page=*crystal @paplb(xyear=Year=2000,xper=Period=,xhrc=Level,xdiv=Division=,xsec=Section=,xproj=Project=)"
+//-------------------------------------------------------------------
+
