@@ -1,0 +1,967 @@
+page fatrn_acc
+
+	embed onload="move_caret('one','xdate')"
+    caption "Acquisition Entry"
+    //sidebar primage
+    //sections form one, list one,text top, script myscript,~
+    // 	method ast_ac,method upd_ast_ac,~
+    // 	method chk_access, method chk_command,~
+    // 	method upd_famst
+		
+//-------------------------------
+	layout mylayout 1 1 1 //columns rows  tabrows
+        //group one,docs,spare (1,1)
+		group one,docs (1,1)
+		script myscript (0,0)
+    end layout
+	 
+	group one 2 2 "Acquisition Entry" //columns rows caption select
+       form one, list one, text top, script myscript (1, 1)//(col,row,colspan,rowspan,width,height)
+	   text primage, text caimg1 (2, 1)
+	   //text text primage (2, 1)
+	   //keys "Top"
+	   keys "Find xvoucher=?"
+    end group
+	
+	#include cadocs.include
+	#include caspare.include
+//--------------------------------	
+	
+	
+    text top
+		"<a href=#top title='Go Top of this Page'><p>Back To Top</p></a>"
+    end text
+     
+    text primage
+        //"<img border=0 src='"+xlink+"' height='150' width='150' ></img>"
+    end text
+	
+	text caimg1
+		 s
+    end text
+
+
+    list one
+        table fatrn
+        caption "List of Transactions"
+        order xvoucher DESC
+        //select "((select xaction from xtrn where xtypetrn='Fixed Asset Transaction' and xtrn=fatrn.xtrnfa) ilike 'Acq%')"
+		//select "(xaction ilike 'AC--%')"
+		
+        rows 20
+        objects  xvoucher attrib(link #servlet+"?page="+page+"&command=Show&xvoucher=?"),~
+                 xcode,xasttype,xastname,xdate,xdepmeth,xestlife,xdepfactor,xastcatg,xcur,xexch,xprime,xbase
+				 
+		field xnomlife
+			len 2
+		end field
+		
+		field xestlife
+			len 2
+		end field
+		
+		field xexch
+			len 3.4
+		end field
+    end list
+
+    form one
+		valid valid//,access
+        table fatrn
+        order xvoucher DESC
+        //select "((select xaction from xtrn where xtypetrn='Fixed Asset Transaction' and xtrn='"+xtrnfa+"') like 'Acq%')"
+		//select "(xaction ilike 'AC--%')"
+        layout 2
+        objects Add,Show,Clear, Update, Top, Previous, Delete, Next, Bottom,Post,Undo,~//Lease Details,Details,
+                xtrnfa,xvoucher display(text),xdate default(#d),~
+                xdiv,xdept,xastloc attrib(mandatory),xastcatg attrib(attach;mandatory),mycatname,xasttype attrib(mandatory),xsubdept,xastname attrib(mandatory) caption(Asset Name),~
+                xastunit,xastbr,~
+                xcode ,xlong,xleasestat caption(Asset SL No.),xtag caption(Tag No.) display(const),xglref,xyear display(hide) ,xper display(hide) ,xproj,~
+                xcur attrib(attach),xexch,xprime attrib(attach),xbase,xappamt ,xareaphys caption(Reg. Cost),,xmaxload caption(Govt. Rate),~
+                xsup,xinvno caption(L/C Number),xdepmeth,xdepfactor,xnomlife,xestlife,xslvval,~
+                xpornum display(hide), xpurdate attrib(mandatory),xastbook,xmortgstat ,xassetstat,~
+                xrate display(hide),xinstalno display(hide),~
+                xdateord ,xmarginsys display(hide),xdocnum display(hide),xdocrow display(hide),~
+                xratesys display(hide),balance display(hide),~
+                xarea,xareagovt caption(Land Size(DM)),xretdate caption(Warranty Expiry Date),xmouza,xsec,xthana,xorigin,xmanufacturer display(text),xalias caption(Manufacturer Bar Code),~
+                xaruntgovt,xmodel,xaction display(hide),~
+                xempnum caption(Asset Responsible Person Name),xvoucherlink caption(GL Voucher) display(const) attrib(local), xglvoucher display(hide) attrib(local)
+				//xemp attrib(attach),name,~//xphone,~//xrem caption(Note),~
+                //,xlink attrib(hidden)
+				//dumdesc//,xdesc01,xdesc08,xdesc03,xdatework default(#d),xdesc04,xdesc05,xdesc06,xdesc07
+
+        field xdept
+			caption Division
+			display ocombo
+            pick "select xcode from xcodes where zid='"+#id+"' and xtype='Division'"
+        end field 
+		
+		field post
+			event before
+				set myfatrn=xvoucher
+				//print myfatrn+" jontro ta dekho"
+				call fatoglacq
+				set xvoucher=myfatrn
+			end event
+		end field
+		
+		field xestlife
+			len 4
+		end field
+
+        //field xempnum
+		//	//pick list xempnum
+		//	pick "select xcode from xcodes where zid='"+#id+"' and xtype='Employee'"
+		//	display ocombo
+		//end field   
+
+		field xnomlife
+			len 4
+		end field
+		
+		field xexch
+			len 3.4
+		end field
+		
+		field mycatname
+            attrib local
+            display const
+            event after
+                set mysql = "select xdescdet from xcodes where zid='"+#id+"' and xcode='"+xastcatg+"' and xtype='FA Category'"
+				set mycatname=#sql(mysql)
+				//print mysql+mycatname
+            end event
+        end field
+		
+		field xaruntgovt
+            display text
+            pick
+			caption B/E
+        end field
+        
+        field xmortgstat
+            display text
+            caption HS Code
+            pick
+        end field
+        
+        field xleasestat
+             display text
+             pick
+        end field
+        
+        field xrem
+            width 40
+        end field
+        
+        field name
+		
+            attrib local
+            display const
+            event after
+                set name=#sql(str,"select xempnum from hrmst where zid='"#id"' and xempnum='"+xemp+"'")
+            end event
+        end field
+        
+
+        field xaruntphys
+             display text
+             width 40
+             pick
+        end field
+
+        field Asset_search
+          event before
+            //**NOWAY*** class osbcustom(search(xastname,"s","famst","xcode:xastname","pickAsset","xcode:xastname:xastcatg:xasttype:xastbr","yes","Code:Name:Category:Type:Branch"))
+          end event
+        end field
+        
+        field xdateord
+            caption Transfer Date
+			display hide
+        end field
+        
+		field xarea
+            caption Service Warranty
+            pick "Yes,No"
+		end field
+		
+		field xorigin
+			display ocombo
+		end field
+
+		field xsec
+			caption Section
+			display hide
+			pick
+		end field
+       
+        field xmouza
+        	//caption Mode of Procurement
+			caption Land Size
+        	width 40
+        	display hide
+        	pick
+			width 20
+        end field
+        
+        field xthana
+        	display hide
+        	caption Current Location
+        	width 20
+        	//pick
+        end field
+        
+        field xfile
+              attrib local
+              width 5
+        end field
+
+	field xlink
+	      event after
+		if xlink .eq. ""
+			set xlink="docs"+#sep+"x"+#id+#sep+xcode+".jpg"
+		end if
+	      end event
+	end field
+	field *Upload
+				event before
+					set globals(filename) = xfile
+				end event
+	end field
+	        
+        field xsubdept
+        	caption Asset Sub Type
+			display ocombo
+        	//pick "select xcode from xcodes where zid='"+#id+"' and xtype='FA Type1'"
+        	pick  code FA Sub Type
+			width 10
+        	event after
+        		set globals(xsubdept)=xsubdept
+        	end event
+        end field
+
+        field xdiv
+            caption Company Unit
+			display ocombo
+            pick "select xcode from xcodes where zid='"+#id+"' and xtype='Company Unit'"
+        end field
+        
+        field xrate
+            caption Lease Value
+        end field
+        
+        field xmarginsys
+            caption Lease Down Payment
+        end field
+        
+        field xratesys
+            caption Installment Amount
+            display const
+        end field
+        
+        field sec2
+          attrib local
+          display const
+          caption
+          col 3
+          event after
+            set sec2 = "<center><font color=red size=+1>----------- Lease Information -----------</font></center>"
+          end event
+        end field
+        
+        field xastcatg
+          	caption Asset Category          	
+          	display ocombo
+            //width 30
+          	pick  code FA Category //list xastcatg
+	        event after
+	        	set globals(xastcatg)=xastcatg
+	        end event
+        end field
+
+        field xastunit
+        	caption Unit of Measurement
+        	display hide
+      		pick list faunit
+        end field
+
+		field xastloc
+			pick code FA Location //list falocation
+            display ocombo
+		end field
+                
+       field xproj
+      display hide
+       end field
+
+        field xvoucher
+         display text
+         caption Transaction Number
+		 pick list xfatrnnum
+         event after
+          	set globals(xvoucher)=xvoucher
+          	set globals(xdiv)=xdiv
+          	set globals(xastloc)=xastloc
+          	set globals(xdept)=xdept
+          	if xvoucher .ne. ""
+          		//set #field(xastcatg.display)="constant"
+          		//set #field(xasttype.display)="constant"
+          		//set #field(xsubdept.display)="constant"
+          		//set #field(xleasestat.display)="constant"
+          	end if
+         end event
+        end field
+
+        field xcode
+          caption Asset Code
+          //pick select xcode from fatrn
+          display const
+        end field
+        
+        field xappamt
+            caption WDV 
+        end field
+        
+        field balance
+            attrib local
+            //display const
+            caption Balance Amount
+            event after
+                set balance=0.0+xrate-xappamt
+            end event
+        end field
+
+        field xastbook
+           Caption Part No
+          //pick list fabook
+          //display hide
+        end field
+
+		field xasttype
+			caption Asset Type
+			pick code FA Type //list fatype
+			display ocombo
+			event after
+				set globals(xasttype)=xasttype
+			end event          
+		end field
+
+        field xastbr
+          //pick list fabranch
+          display hide
+        end field
+
+        field xcur
+			display ocombo
+        end field
+
+        field xexch
+          default "1.0000"
+        end field
+
+        field xdepmeth
+          display ocombo
+          pick "SL - Straight Line,RB - Reducing Balance"//,DD - Double Declining Balance,SY - Sum of the Years Digit,SP - Special"
+          //display text
+          default "RB - Reducing Balance"
+          //attrib readonly
+        end field
+
+        field xbase
+          display constant
+          event before            
+            set xbase = 0.0+xprime*xexch
+          end event
+        end field
+
+        field xsupplier
+          pick list xsup
+        end field
+
+        field xglref
+          caption Existing Asset Tag No.
+		  wid 20
+        end field
+
+        field xlong
+			height 2
+			width 38
+			caption Asser Description
+        end field
+        
+        field xpurdate        	
+        	default #d			
+        end field
+
+        field xprime
+        	caption Asset Value
+        end field
+        
+        field xdate	
+        	event after
+        		set globals(xdate) = xdate
+        	end event
+        end field
+        
+        field xtrnfa
+        	default "AC--"
+			//display const
+			pick select xtrn from xtrn where xtypetrn='Fixed Asset Transaction' and xaction = 'Acquisition'
+        end field
+        
+        field xassetstat
+			caption Asset Flag
+        	default "In Use"
+        end field
+		
+		field dumdesc
+			attrib local
+			display const
+			caption 
+			col 3
+			event after
+				set dumdesc="<font color=blue size=+2>-------:Land Details:---------</font>"
+			end event
+		end field
+		
+		field xdesc01
+			caption R.S No
+		end field
+		
+		field xdesc08
+			caption B.S Daag no
+		end field
+		
+		field xdesc03
+			caption Mouza
+		end field
+		
+		field xdesc04
+			caption Deed no.
+		end field
+		
+		field xdatework
+			caption Deed Date			
+		end field
+		
+		field xdesc05
+			caption Area In(Decimal)
+		end field
+		
+		field xdesc06
+			caption Area in Khata
+		end field
+		
+		field xdesc07
+			caption Area In Acre
+		end field
+        
+
+
+        field update
+          event before
+            set globals(ErrChk)=""
+            set trntype=#sub (xvoucher,0,2)
+
+            call chk_access
+            
+            if globals(ErrChk) .ne. "1"
+              if globals(xvoucher) .ne. xvoucher
+                set globals(ErrChk) = "1"
+                error "Cannot Update, Show First!"
+              end if
+            end if
+            
+             if globals(ErrChk) .ne. "1"
+             	set chk_loc = #sql("select xcode from xcodes where xtype='FA Location' and xcode='"+xastloc+"'")
+             	if #result .ne. "true"
+             		set globals(ErrChk)="1"
+             		error "Location not Found</p>Cannot "+#command
+             	end if
+             end if
+
+            if globals(Errchk) .ne. "1"
+				if xrate > 0.0 .and. xinstalno > 0.0
+			     	//class osbcustom(#calc(xrate,xinstalno,"/",2,xratesys))
+			     	set xratesys = 0.0+xrate/xinstalno
+			    end if
+			end if
+
+			if globals(ErrChk) .ne. "1"
+	            if xtrnfa .sw. "AC"
+	            else
+	              set globals(ErrChk)="1"
+	              error "Transaction Type mismatch<br>Use Acquisition Code only."
+	            end if
+			end if
+
+            if globals(ErrChk) .ne. "1"
+              set myqry = "select xcode from fatrn where xvoucher='"+globals(xvoucher)+"'"
+              set tmpchk = #sql(myqry)
+              if #result .ne. "true"
+                set globals(ErrChk)="1"
+                error "Invalid Voucher Number."
+              else
+                if tmpchk .ne. xcode
+                  set globals(ErrChk)="1"
+                  error "Cannot Change Asset Code."
+                end if
+              end if
+            end if
+
+            if globals(ErrChk) .ne. "1"
+              set mysql="select xcode from famst where xcode='"+xcode+"'"
+              set tmpchk=#sql(mysql)
+              if #result .ne. "true"
+                set globals(ErrChk)="1"
+                error "Asset Code Not found in Asset Master<br>Please Check Asset Code."
+              end if
+            end if
+            
+             if globals(ErrChk) .ne. "1"
+             	if xdiv .ne. globals(xdiv)
+//             		set globals(ErrChk)="1"
+  //           		error "Cannot Change Company Code"
+             	end if
+             end if
+
+             if globals(ErrChk) .ne. "1"
+             	if xastloc .ne. globals(xastloc)
+             		//set globals(ErrChk)="1"
+             		//error "Cannot Change Location Code"
+             	end if
+             end if
+             
+             if globals(ErrChk) .ne. "1"
+             	if xdept .ne. globals(xdept)
+             //		set globals(ErrChk)="1"
+             //		error "Cannot Change Department Code"
+             	end if
+             end if
+
+             if globals(ErrChk) .ne. "1"
+             	if xsubdept .ne. globals(xsubdept)
+             		//set globals(ErrChk)="1"
+             		//error "Cannot Change Sub Type2 Code"
+             	end if
+             end if
+
+             if globals(ErrChk) .ne. "1"
+             	if xastcatg .ne. globals(xastcatg)
+             		set globals(ErrChk)="1"
+             		error "Cannot Change Asset Type"
+             	end if
+             end if
+                         
+             if globals(ErrChk) .ne. "1"
+             	if xasttype .ne. globals(xasttype)
+             		//set globals(ErrChk)="1"
+             		//error "Cannot Change Asset Sub Type"
+             	end if
+             end if
+
+			 if globals(ErrChk) .ne. "1"
+             	if xpurdate > xdate
+             		set globals(ErrChk)="1"
+             		error "Please correct the purchase date"
+             	end if
+             end if
+             if globals(ErrChk) .ne. "1"
+             
+                set xlink="docs"+#sep+"x"+#id+#sep+xcode+".jpg"
+				
+				if globals(ErrChk) .ne. "1"                
+                 int offset
+                 int per
+                 int year=#sub(xdate,0,4)
+
+                 int tempper
+                 int tempyear
+                 set offset=castatus.xinteger("zid='"+#id+"' and xtypestatus='GL Period Offset'")
+                 set per=12+#sub(xdate,5,2)-offset
+                 if per<=12
+                    set xper=per
+                    set xyear=year-1
+                 else
+                    set xper=per-12
+                    set xyear=year
+                 end if
+				end if
+				
+				
+             	str mysql = "update famst set xlink = '"+xlink+"' where xcode='"+xcode+"'"
+             	set tmpstr = #sql(str,mysql)
+             	
+             	str mysql = "update famst set xastname = '"+xastname+"' where xcode='"+xcode+"'"
+             	set tmpstr = #sql(str,mysql)
+             	
+             	str mysql = "update famst set xprime = '"+xprme+"' where xcode='"+xcode+"'"
+             	set tmpstr = #sql(str,mysql)
+             	
+             	str mysql = "update famst set xestlife = '"+xestlife+"' where xcode='"+xcode+"'"
+             	set tmpstr = #sql(str,mysql)
+					
+				str mysql = "update famst set xpurdate = '"+xpurdate+"' where xcode='"+xcode+"'"
+             	set tmpstr = #sql(str,mysql)
+
+				buffer famst
+				move famst = fatrn(xcode)
+				update famst(xcode)
+				print xyear+" "+xper
+             end if
+             set xname = xdiv+"/"+xastloc+"/"+xastcatg+"/"+xsubdept+"-"+xleasestat
+          end event
+        end field
+
+        field delete
+          event before
+            set globals(ErrChk) = ""
+            set trntype=#sub (xvoucher,0,2)            
+                        
+            if globals(ErrChk) .ne. "1"
+              if globals(xvoucher) .ne. xvoucher
+                set globals(ErrChk) = "1"
+                error "Cannot Delete, Show First!"
+              end if
+            end if
+
+			//if globals(ErrChk) .ne. "1"
+	        //    if trntype .sw. "AC"
+	        //    else
+	        //      set globals(ErrChk)="1"
+	        //      error "Transaction Type mismatch<br>Use Acquisition Code only."
+	        //    end if
+			//end if
+
+            if globals(ErrChk) .ne. "1"
+              set myqry = "select xcode from fatrn where xvoucher='"+xvoucher+"'"
+              set tmpchk = #sql(myqry)
+              if #result .ne. "true"
+                set globals(ErrChk)="1"
+                error "Invalid Voucher Number."
+              else
+                if tmpchk .ne. xcode
+                  set globals(ErrChk)="1"
+                  error "Asset Code Mismatch."
+                end if
+              end if
+            end if
+			/*
+            if globals(ErrChk) .ne. "1"
+              if xglref .ne. ""
+                set globals(ErrChk) = "1"
+                error "Transaction already posted to Accounts<br>Cannot DELETE record."
+              end if
+            end if
+			*/
+            if globals(ErrChk) .ne. "1"
+              set mysql="select xcode from famst where xcode='"+xcode+"'"
+              set tmpchk=#sql(mysql)
+              if #result .ne. "true"
+                set globals(ErrChk)="1"
+                error "Asset Code Not found in Asset Master<br>Please Check Asset Code."
+              end if
+            end if
+
+            if globals(ErrChk) .ne. "1"
+              set mysql="select xvoucher from famstad where xcode='"+xcode+"'"
+              set tmpchk=#sql(mysql)
+              if #result .eq. "true"
+                set globals(ErrChk)="1"
+                error "ADDITION Transaction found against this Assest Code<br>Cannot Delete now."
+              end if
+            end if
+
+            if globals(ErrChk) .ne. "1"
+              set mysql="select xvoucher from famstrv where xcode='"+xcode+"'"
+              set tmpchk=#sql(mysql)
+              if #result .eq. "true"
+                set globals(ErrChk)="1"
+                error "REVALUATION Transaction found against this Assest Code<br>Cannot Delete now."
+              end if
+            end if
+
+            if globals(ErrChk) .ne. "1"
+              set mysql="select xvoucher from famsttr where xcode='"+xcode+"'"
+              set tmpchk=#sql(mysql)
+              if #result .eq. "true"
+                set globals(ErrChk)="1"
+                error "TRANSFER Transaction found against this Assest Code<br>Cannot Delete now."
+              end if
+            end if
+
+            if globals(ErrChk) .ne. "1"
+              set mysql="select xvoucher from famstdp where xcode='"+xcode+"'"
+              set tmpchk=#sql(mysql)
+              if #result .eq. "true"
+                set globals(ErrChk)="1"
+                error "DISPOSAL Transaction found against this Assest Code<br>Cannot Delete now."
+              end if
+            end if
+
+            if globals(ErrChk) .ne. "1"
+              set mysql="select xvoucher from fatrn where xvoucher like 'DE%' and xcode='"+xcode+"'"
+              set tmpchk=#sql(mysql)
+              if #result .eq. "true"
+                set globals(ErrChk)="1"
+                error "DEPRECIATION Transaction found against this Assest Code<br>Cannot Delete now."
+              end if
+            end if
+
+            if globals(ErrChk) .ne. "1"
+              set oldastcode = xcode
+            end if
+          end event
+
+		event after
+			if #result .eq. "true" .and. globals(ErrChk) .ne. "1"
+				set tmpstat = #sql("delete from famst where zid = '"+#id+"' and xcode = '"+oldastcode+"'")
+				if #result .ne. "true"
+					print "<h2><font color=red>System was unable to delete the Asset Master<br>Please delete Asset Master manually.<font>"
+				end if
+			end if
+		end event
+
+        end field
+	
+        embed onsubmit="submitit(this)"
+
+        field details
+          embed onclick="clicked(this)"
+        end field
+        
+//        field lease
+//          embed onclick="lease()"
+//        end field
+
+     end form
+
+     script myscript
+
+      <script language="javascript" type="text/javascript">
+        var detail="" 
+
+        function clicked(b){
+          detail="clicked"
+        }
+        
+        function lease(){
+          detail="lease"
+        }
+
+        function submitit(form){
+          if (detail=="clicked"){
+            form.page.value = "famaindet"
+            form.searchbutton.value = "Top"
+          }
+
+          if (detail=="lease"){
+            form.page.value = "leaseland"
+            form.searchbutton.value = "Top"
+          }
+        }
+
+        function pickAsset(link){
+          if (navigator.appName.indexOf("Netscape") >= 0){
+            document.one.xcode_ONE.value=link.text.substring(0,4)
+            document.one.xcode_TWO.value=link.text.substring(4)
+          }else{
+            document.one.xcode_ONE.value=link.innerText.substring(0,4)
+            document.one.xcode_TWO.value=link.innerText.substring(4)
+          }
+          return false
+        }
+
+      </script>
+     end script
+	 
+
+	valid valid
+    before Add
+      call before_Add
+			set mysql = "select xaction from xtrn where xtypetrn='Fixed Asset Transaction' and xtrn='"+xtrnfa+"'"
+			set xaction = #sql(mysql)
+      
+    end before
+    after Add
+      //call upd_famst	  
+	  buffer famst=fatrn(xcode)			
+	  insert famst
+    end after
+		before Update
+			set mysql = "select xaction from xtrn where xtypetrn='Fixed Asset Transaction' and xtrn='"+xtrnfa+"'"
+			set xaction = #sql(mysql)
+			//print xaction+mysql
+		end before
+		
+      before Undo
+        set voucher=glheader.xvoucher(" xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher++"'")
+				//print "deleting xvoucher="+voucher
+        int i=#sql(int,"delete from glalc where (xvoucher='"+voucher+"' or xalcnum='"+voucher+"' )")            
+        int i=#sql(int,"delete from gltax where xvoucher='"+voucher+"'")            
+        int i=#sql(int,"delete from gldetail where xvoucher='"+voucher+"'")            
+		//int i=#sql(int,"delete from glheader where xvoucher='"+voucher+"'")
+        //           
+        int i=#sql(int,"delete from glaudit where xvoucher='"+voucher+"'")            
+              
+        //set #command="Show"
+        action Show
+      end before
+	  
+		config
+			set #fields(dumdesc->.display)="hidden"
+			set xglvoucher=glheader.xvoucher("xdoctype='Fixed Asset Transaction' and xdocnum='"+xvoucher+"'")
+			set xvoucherlink="<a href='"+#servlet+"?page=glheader&xvoucher="+xglvoucher+"&command=Show&embeddedpage=1' target='New'>"+xglvoucher+"</a>"
+			int dt=#sql(int,"select count(xrowvou) from gldetail where xvoucher='"+xglvoucher+"'" )  
+			print "GL voucher in gldetail "+dt+" ; "+xglvoucher
+			//if xglvoucher .ne. ""
+			if dt > 0
+				set #fields(Post.display)="disabled"
+				set #fields(Delete.display)="disabled"
+				set #fields(Update.display)="disabled"
+				//print xdate++" per" + xper
+				str sql54="select count (*) from  fatrn  where xaction ilike 'Depr%' and xdate>='"+xdate+"'"
+					//print sql54
+					int j=#sql(int,sql54)
+					
+					if j > 0
+						set #fields(Undo.visibility)="disable"
+						
+					end if
+			else 
+			 set #fields(Undo.display)="disabled"
+			end if
+			
+			int fatrn=#sql(int,"select count(xvoucher) from fatrn where xcode='"+xcode+"'" and "zid='"+#id+"')  
+			print fatrn+ "Asset Code"+
+			
+			if fatrn > 1
+				set #fields(Post.display)="disabled"
+				set #fields(Delete.display)="disabled"
+				set #fields(Update.display)="disabled"
+				set #fields(Undo.display)="disabled"
+			end if
+//------------------------			
+			set globals(xvoucher)=xvoucher
+			set globals(returnpage)="fatrn_acc"
+            set globals(trnfield)="xvoucher"
+            set globals(xtypetrn)="Fixed Asset"
+            set globals(xtrnnum)=xvoucher
+			
+			str s ="<table><tr><td>"
+			  //str s = "<img border=0 src='"+imgtemp+"'  height='180' width='200'></br>"
+			  
+			  str clist="zid, xtypetrn, xtrnnum, xdoc, xlink, zactive,xcontext"
+	
+			str sql="select "+clist+" from cadocs where ~
+						xtypetrn='Fixed Asset'  and xtrnnum = '"+xvoucher+"' order by xdoc"
+						
+			int count=#sqlfill(sql)
+			int i = 0
+			int err=0
+			//begin
+			while i < count
+				array get(i,clist)	
+				str s = s+"<img border=0 src='"+xlink+"'  height='180' width='200'></br>"//+"</td></tr><tr><td>"+xdoc+"</tr><tr>"
+			set i = i + 1
+			end while
+			 str s =s+"</td></tr></table>"
+//------------------------			
+		end config
+	end valid
+  
+  method before_Add
+            set globals(ErrChk) = ""
+            str vtype = ""
+            //set xslvval=0.00+1
+            set trntype = #sub (xvoucher,0,2)
+            set astcode = #sub (xcode,0,4)            
+
+			if globals(ErrChk) .ne. "1"
+	      if xtrnfa .sw. "AC"
+	      else
+	        set globals(ErrChk)="1"
+	        error "Transaction Type mismatch<br>Use Acquisition Code only."
+	      end if
+			end if
+			
+			if globals(Errchk) .ne. "1"
+				if xrate > 0.0 .and. xinstalno > 0.0			     	
+			     	set xratesys = 0.0+xrate/xinstalno
+			  end if
+			end if
+
+//********
+//*********
+
+//
+				str mysql = #sql(str,"select xvoucher from fatrn where xvoucher like '"+xtrnfa+"%' order by xvoucher desc")
+				if #result .eq. "true" .and. mysql .ne. ""
+					set last_numtrn = 0+#sub(mysql,6)
+				end if
+				set last_numtrn = 0+1+last_numtrn
+				set mysql = #padl(""+last_numtrn,6,"0")
+				set xvoucher = xtrnfa + mysql                        
+            
+                 int offset
+                 int per
+                 int year=#sub(xdate,0,4)
+
+                 int tempper
+                 int tempyear
+                 set offset=castatus.xinteger("zid='"+#id+"' and xtypestatus='GL Period Offset'")
+                 set per=12+#sub(xdate,5,2)-offset
+				 //set per=12+#sub(xdate,5,2)
+                 if per<=12
+                    set xper=per
+                    set xyear=year-1
+                 else
+                    set xper=per-12
+                    set xyear=year
+                 end if
+				//*** For Auto asset code numbering, you can 4/substract parameters, as per requirement
+				
+				set astcategory=xastcatg
+				
+				//set astcat="BHL"+xastcatg+#sub(xyear,2,2)+#padl(""+xper,2,"0")
+				set astcat="BHL"+xastcatg+#sub(xyear,2,2)+#sub(xdate,5,2)
+                set last_numas=0				
+				set asstcodepre=astcat				
+
+				str mysql = #sql(str,"select xcode from fatrn where zid='"+#id+"' and xcode like '"+asstcodepre+"%' order by xcode desc")                
+//dprint "mysql="+mysql
+				if #result .eq. "true" .and. mysql .ne. ""
+					set mylen = 0+#len(mysql)
+					set mylen = 0+mylen-6
+					set last_numas = 0+#sub(mysql,mylen,6)				
+				end if
+				set last_numas = 1+last_numas
+				set mysql = #padl(""+last_numas,6,"0")
+				
+				set xcode = astcat+mysql
+//dprint "fatrn.xcode="+fatrn.xcode
+				//*** End of Auto code numbering
+				
+				
+				
+        set astcatg=xastcatg
+        set asttype=xasttype
+				
+				//set acc="123456789" 
+				//call fataggen
+				//***output - tag
+				//set tag ="BHL"+xastloc+xastcatg+#sub(xyear,2,2)+#padl(""+xper,2,"0")
+				set tag ="BHL"+xastloc+xastcatg+#sub(xyear,2,2)+#sub(xdate,5,2)
+				set xtag=tag+mysql
+				
+		set acc=cagli.xacc("xtypegli='Asset Acquisition' and xgitem='"+astcategory+"'")
+        
+				if acc .eq. ""
+          error " GL Interface for "+xtrnfa+" Catagory: "+astcategory+" Not Found -- Aborting "
+				end if
+
+  end method
+  
+#include access.valid	
+end page
